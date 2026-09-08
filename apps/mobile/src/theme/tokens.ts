@@ -1,21 +1,35 @@
 /**
- * Deckly design tokens — derived from the reference screens in /ref.
- * Muted, editorial, off-white ground. Light mode only for v1: the refs are a
- * light language, and a half-hearted dark mode reads worse than none.
+ * Raw token values mirrored from `src/global.css`.
+ *
+ * Styling goes through Uniwind classNames — this file exists ONLY for the
+ * places a className can't reach: SVG fills, StatusBar, navigation theming,
+ * Reanimated interpolations. If you're importing this into a `style` prop,
+ * you almost certainly want a className instead.
+ *
+ * Keep in sync with @theme in global.css.
  */
 
-export const palette = {
-  // Ground + ink
+export const DECK_COLORS = [
+  "clay",
+  "slate",
+  "sage",
+  "mocha",
+  "eucalyptus",
+  "plum",
+] as const;
+
+export type DeckColorKey = (typeof DECK_COLORS)[number];
+
+export const raw = {
   bg: "#EDECEA",
   bgSunken: "#E5E4E1",
   surface: "#FFFFFF",
   surfaceAlt: "#F6F5F3",
+  hairline: "#DEDCD8",
   ink: "#111111",
   inkMuted: "#6B6B6B",
   inkFaint: "#9C9A97",
-  hairline: "#DEDCD8",
 
-  // Deck colours (s3 grid). Each has a tint for chips/quiet fills.
   clay: "#935B5D",
   clayTint: "#F0E5E5",
   slate: "#71829A",
@@ -29,56 +43,40 @@ export const palette = {
   plum: "#6B5F7E",
   plumTint: "#E6E3EB",
 
-  // Accents
   amber: "#E8B44A",
-  amberTint: "#FAF0DA",
   success: "#5C7A5E",
   danger: "#A85449",
 } as const;
 
-export type DeckColorKey =
-  | "clay"
-  | "slate"
-  | "sage"
-  | "mocha"
-  | "eucalyptus"
-  | "plum";
-
-export const deckColor = (key: DeckColorKey) => ({
-  base: palette[key],
-  tint: palette[`${key}Tint` as const],
-});
-
-/** Deterministic colour from a deck id, so a deck keeps its identity offline. */
-export const colorForId = (id: string): DeckColorKey => {
-  const keys: DeckColorKey[] = ["clay", "slate", "sage", "mocha", "eucalyptus", "plum"];
+/**
+ * Deterministic colour from a deck id — a deck keeps its identity offline,
+ * across devices, and without a round-trip.
+ */
+export function colorForId(id: string): DeckColorKey {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return keys[h % keys.length];
+  return DECK_COLORS[h % DECK_COLORS.length];
+}
+
+/** Tailwind class fragments per deck colour, for building variant maps. */
+export const deckClass: Record<
+  DeckColorKey,
+  { bg: string; tint: string; text: string; border: string }
+> = {
+  clay: { bg: "bg-clay", tint: "bg-clay-tint", text: "text-clay", border: "border-clay" },
+  slate: { bg: "bg-slate", tint: "bg-slate-tint", text: "text-slate", border: "border-slate" },
+  sage: { bg: "bg-sage", tint: "bg-sage-tint", text: "text-sage", border: "border-sage" },
+  mocha: { bg: "bg-mocha", tint: "bg-mocha-tint", text: "text-mocha", border: "border-mocha" },
+  eucalyptus: {
+    bg: "bg-eucalyptus",
+    tint: "bg-eucalyptus-tint",
+    text: "text-eucalyptus",
+    border: "border-eucalyptus",
+  },
+  plum: { bg: "bg-plum", tint: "bg-plum-tint", text: "text-plum", border: "border-plum" },
 };
 
-export const space = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  xxl: 32,
-  xxxl: 48,
-  /** Screen gutter used everywhere. The refs are generous with margin. */
-  gutter: 20,
-} as const;
-
-export const radius = {
-  sm: 10,
-  md: 16,
-  tile: 20,
-  card: 24,
-  sheet: 28,
-  pill: 999,
-} as const;
-
-/** Soft and low. The refs never use a hard drop shadow. */
+/** Soft and low — the refs never use a hard drop shadow. */
 export const shadow = {
   card: {
     shadowColor: "#111111",
@@ -94,11 +92,6 @@ export const shadow = {
     shadowOffset: { width: 0, height: 12 },
     elevation: 8,
   },
-  none: {},
 } as const;
 
-export const duration = {
-  fast: 140,
-  base: 220,
-  slow: 380,
-} as const;
+export const duration = { fast: 140, base: 220, slow: 380 } as const;

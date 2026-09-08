@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+@import 'uniwind';
+
+/* ---------------------------------------------------------------------------
+ * Deckly design system — the single source of truth.
+ *
+ * Every colour, size and radius the app is allowed to use lives here. If a
+ * value isn't in this file it doesn't exist: no `bg-[#993344]`, no arbitrary
+ * `text-[17px]`. Derived from the reference screens in /ref.
+ * ------------------------------------------------------------------------- */
+
+@theme {
+  /* -- Ground + ink ------------------------------------------------------ */
+  --color-bg: #edecea;
+  --color-bg-sunken: #e5e4e1;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f6f5f3;
+  --color-hairline: #dedcd8;
+
+  --color-ink: #111111;
+  --color-ink-muted: #6b6b6b;
+  --color-ink-faint: #9c9a97;
+  --color-ink-inverse: #ffffff;
+
+  /* -- Deck colours (the s3 grid) ---------------------------------------- *
+   * Six identities. Assigned deterministically on deck creation, never edited.
+   * Each has a `-tint` for quiet fills: chips, empty states, progress tracks. */
+  --color-clay: #935b5d;
+  --color-clay-tint: #f0e5e5;
+  --color-slate: #71829a;
+  --color-slate-tint: #e3e7ec;
+  --color-sage: #8e9379;
+  --color-sage-tint: #e8eae2;
+  --color-mocha: #7e6e68;
+  --color-mocha-tint: #ebe6e4;
+  --color-eucalyptus: #6e8781;
+  --color-eucalyptus-tint: #e2e9e7;
+  --color-plum: #6b5f7e;
+  --color-plum-tint: #e6e3eb;
+
+  /* -- Accents ----------------------------------------------------------- */
+  --color-amber: #e8b44a;
+  --color-amber-tint: #faf0da;
+  --color-success: #5c7a5e;
+  --color-danger: #a85449;
+  --color-danger-tint: #f5e6e3;
+
+  /* -- Type -------------------------------------------------------------- *
+   * Inter Tight for display (tight tracking, the grotesk in the refs),
+   * Inter for everything else. Two families. Resist adding a third. */
+  --font-display: 'InterTight_600SemiBold';
+  --font-display-bold: 'InterTight_700Bold';
+  --font-sans: 'Inter_400Regular';
+  --font-medium: 'Inter_500Medium';
+  --font-semibold: 'Inter_600SemiBold';
+
+  /* The refs use a big jump between hero and body — that contrast IS the look.
+   * Don't fill the gap with intermediate sizes. */
+  --text-hero: 44px;
+  --text-hero--line-height: 48px;
+  --text-hero--letter-spacing: -1.4px;
+
+  --text-display: 32px;
+  --text-display--line-height: 37px;
+  --text-display--letter-spacing: -1px;
+
+  --text-title: 24px;
+  --text-title--line-height: 29px;
+  --text-title--letter-spacing: -0.6px;
+
+  --text-heading: 18px;
+  --text-heading--line-height: 24px;
+  --text-heading--letter-spacing: -0.3px;
+
+  --text-subheading: 16px;
+  --text-subheading--line-height: 22px;
+  --text-subheading--letter-spacing: -0.2px;
+
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 26px;
+
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+
+  --text-caption: 13px;
+  --text-caption--line-height: 18px;
+
+  --text-label: 13px;
+  --text-label--line-height: 16px;
+
+  --text-overline: 11px;
+  --text-overline--line-height: 14px;
+  --text-overline--letter-spacing: 0.6px;
+
+  /* -- Radius ------------------------------------------------------------ */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-tile: 20px;
+  --radius-card: 24px;
+  --radius-sheet: 28px;
+
+  /* -- Spacing ----------------------------------------------------------- *
+   * Default 4px scale stays. `gutter` is the screen margin used everywhere —
+   * the refs are generous with margin and that generosity is load-bearing. */
+  --spacing-gutter: 20px;
+}
