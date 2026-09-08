@@ -188,8 +188,14 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
       unique indexes, the atomic conditional debit refusing when short, the due
       queue, progress and weak-topic aggregates, and a user delete cascading
       every child row away
+- [x] **Worker deployed to production** at
+      `https://retenit-api-production.bikash13763.workers.dev`
+- [x] Live checks pass: `/health` 200, `/health/db` 200 against Neon,
+      `/decks` 401 unauthenticated, unknown route 404, bad webhook secret 401
+- [x] EAS project created and linked (`@bksh01/retenit`)
+- [ ] EAS development build finishes
 - [ ] One real AI generation end to end (needs a signed-in user)
-- [ ] Run on a real device (needs a dev build)
+- [ ] Run on a real device
 - [ ] Real purchase through Play Billing
 
 ## 10. Polish
@@ -202,6 +208,21 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [ ] Analytics on the funnel: install → first deck → second session → paywall → purchase
 
 ---
+
+## Before the first run, in the dashboards
+
+- [ ] **Clerk: allowlist the OAuth redirect.** Google sign in returns to
+      `retenit://` and Clerk will refuse a redirect it does not know. This is
+      the most likely reason sign in fails on first launch.
+- [ ] **RevenueCat: add the webhook.**
+      `https://retenit-api-production.bikash13763.workers.dev/webhooks/revenuecat`
+      with an Authorization value, then push it as `REVENUECAT_WEBHOOK_SECRET`.
+      Until then the webhook rejects everything, so purchases will not land.
+- [ ] **RevenueCat: delete the Lifetime product.** One payment for a recurring
+      monthly credit allowance is unbounded AI cost with no renewal to recover it.
+- [ ] **Groq: the free tier is 8k tokens per minute account wide.** That is
+      roughly one deck generation per minute for the whole app, and it will not
+      survive a twelve tester closed test.
 
 ## Open questions
 
