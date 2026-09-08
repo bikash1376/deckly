@@ -76,6 +76,8 @@ export default function RootLayout() {
                   options={{ presentation: "modal", animation: "slide_from_bottom" }}
                 />
                 <Stack.Screen name="deck/[id]" />
+                <Stack.Screen name="deck/[id]/edit-flashcards" />
+                <Stack.Screen name="deck/[id]/edit-quiz" />
                 <Stack.Screen name="note/[id]" />
                 <Stack.Screen
                   name="scan"

@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { and, desc, eq, sql, count } from "drizzle-orm";
 import {
   CreateDeckInput,
+  CreateManualDeckInput,
+  Quiz as QuizSchema,
   CardKind,
   cleanDeep,
   Flashcards as FlashcardsSchema,
@@ -213,6 +215,197 @@ route.post("/pdf", async (c) => {
     cardsTotal: 0,
     createdAt: deck.createdAt.toISOString(),
   });
+});
+
+/**
+ * Create an empty deck to fill in by hand.
+ *
+ * No model call, so no credits and no rate limit. The deck starts with no
+ * cards; the client sends flashcards or a quiz to the routes below.
+ */
+route.post("/manual", async (c) => {
+  const db = createDb(c.env.DATABASE_URL);
+  const userId = c.get("userId");
+
+  const parsed = CreateManualDeckInput.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) throw errors.invalid("A deck needs a title and a subject.");
+
+  const id = crypto.randomUUID();
+  const inserted = await db
+    .insert(decks)
+    .values({
+      id,
+      userId,
+      title: parsed.data.title.trim(),
+      subject: parsed.data.subject.trim(),
+      color: colorFor(id),
+      sourceKind: "topic",
+      sourceRef: "",
+      // Empty rather than absent: a manual deck has no source to generate from,
+      // and the generate chips stay hidden for it.
+      sourceText: null,
+      tldr: "",
+      outline: [],
+      estimatedMinutes: 0,
+    })
+    .returning();
+
+  const deck = inserted[0]!;
+  return c.json({
+    id: deck.id,
+    title: deck.title,
+    subject: deck.subject,
+    color: deck.color,
+    sourceKind: deck.sourceKind,
+    tldr: deck.tldr,
+    estimatedMinutes: deck.estimatedMinutes,
+    cardsDone: 0,
+    cardsTotal: 0,
+    createdAt: deck.createdAt.toISOString(),
+  });
+});
+
+/**
+ * Replace a deck's flashcards with a hand written set.
+ *
+ * Scheduling state is carried across by matching on the front of each card
+ * rather than by position. Deleting the second card in a list of twenty
+ * otherwise shifts every index below it, which would silently hand each card
+ * the review history of its neighbour.
+ */
+route.put("/:id/flashcards", async (c) => {
+  const db = createDb(c.env.DATABASE_URL);
+  const userId = c.get("userId");
+  const deckId = c.req.param("id");
+
+  const parsed = FlashcardsSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) throw errors.invalid("Every card needs a question and an answer.");
+
+  const owned = await db
+    .select({ id: decks.id })
+    .from(decks)
+    .where(and(eq(decks.id, deckId), eq(decks.userId, userId)))
+    .limit(1);
+  if (!owned[0]) throw errors.notFound("That deck");
+
+  const existing = await db
+    .select()
+    .from(cards)
+    .where(and(eq(cards.deckId, deckId), eq(cards.kind, "flashcards")))
+    .limit(1);
+
+  // Remember what each front knew before the edit.
+  const carried = new Map<string, { ease: number; interval: number; streak: number; lapses: number; dueAt: Date }>();
+  if (existing[0]) {
+    const before = FlashcardsSchema.safeParse(existing[0].content);
+    if (before.success) {
+      const rows = await db.select().from(reviews).where(eq(reviews.cardId, existing[0].id));
+      for (const row of rows) {
+        const front = before.data.cards[row.cardIndex]?.front;
+        if (front) {
+          carried.set(front, {
+            ease: row.ease,
+            interval: row.interval,
+            streak: row.streak,
+            lapses: row.lapses,
+            dueAt: row.dueAt,
+          });
+        }
+      }
+    }
+  }
+
+  const content = cleanDeep(parsed.data);
+  let cardId: string;
+
+  if (existing[0]) {
+    cardId = existing[0].id;
+    await db
+      .update(cards)
+      .set({ content: content as object, model: "manual", promptVersion: "manual@1" })
+      .where(eq(cards.id, cardId));
+    await db.delete(reviews).where(eq(reviews.cardId, cardId));
+  } else {
+    cardId = crypto.randomUUID();
+    await db.insert(cards).values({
+      id: cardId,
+      deckId,
+      userId,
+      kind: "flashcards",
+      content: content as object,
+      model: "manual",
+      promptVersion: "manual@1",
+    });
+  }
+
+  if (content.cards.length > 0) {
+    await db.insert(reviews).values(
+      content.cards.map((card, index) => {
+        const prior = carried.get(card.front);
+        return {
+          userId,
+          deckId,
+          cardId,
+          cardIndex: index,
+          ease: prior?.ease ?? 2.5,
+          interval: prior?.interval ?? 0,
+          streak: prior?.streak ?? 0,
+          lapses: prior?.lapses ?? 0,
+          dueAt: prior?.dueAt ?? new Date(),
+        };
+      }),
+    );
+  }
+
+  return c.json({ id: cardId, kind: "flashcards", count: content.cards.length });
+});
+
+/** Replace a deck's quiz with a hand written one. No scheduling to preserve. */
+route.put("/:id/quiz", async (c) => {
+  const db = createDb(c.env.DATABASE_URL);
+  const userId = c.get("userId");
+  const deckId = c.req.param("id");
+
+  const parsed = QuizSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    throw errors.invalid("Every question needs four options and one marked correct.");
+  }
+
+  const owned = await db
+    .select({ id: decks.id })
+    .from(decks)
+    .where(and(eq(decks.id, deckId), eq(decks.userId, userId)))
+    .limit(1);
+  if (!owned[0]) throw errors.notFound("That deck");
+
+  const content = cleanDeep(parsed.data);
+
+  const existing = await db
+    .select({ id: cards.id })
+    .from(cards)
+    .where(and(eq(cards.deckId, deckId), eq(cards.kind, "quiz")))
+    .limit(1);
+
+  if (existing[0]) {
+    await db
+      .update(cards)
+      .set({ content: content as object, model: "manual", promptVersion: "manual@1" })
+      .where(eq(cards.id, existing[0].id));
+    return c.json({ id: existing[0].id, kind: "quiz", count: content.questions.length });
+  }
+
+  const cardId = crypto.randomUUID();
+  await db.insert(cards).values({
+    id: cardId,
+    deckId,
+    userId,
+    kind: "quiz",
+    content: content as object,
+    model: "manual",
+    promptVersion: "manual@1",
+  });
+
+  return c.json({ id: cardId, kind: "quiz", count: content.questions.length });
 });
 
 route.get("/:id", async (c) => {

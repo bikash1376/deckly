@@ -117,6 +117,17 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Onboarding carousel
 - [x] Error boundary screen
 
+## 5c. Manual creation, no AI
+
+- [x] `POST /decks/manual` — build a deck by hand, zero credits
+- [x] `PUT /decks/:id/flashcards` — hand written cards, review history carried
+      across by matching card fronts rather than position
+- [x] `PUT /decks/:id/quiz` — hand written questions
+- [x] Flashcard editor screen (add, edit, delete, hint)
+- [x] Quiz editor screen (four options, mark correct, explanation)
+- [x] "Build the cards myself" on the create screen
+- [x] Edit affordance on the deck screen for both
+
 ## 6. Study features
 
 - [x] Deck detail screen, card sections, generate-on-tap

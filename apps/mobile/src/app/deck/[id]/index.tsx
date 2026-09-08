@@ -8,6 +8,7 @@ import {
   ChatCircle,
   Flag,
   Sparkle,
+  PencilSimple,
   Cards as CardsIcon,
 } from "phosphor-react-native";
 import { CREDIT_COST, type CardKind } from "@retenit/shared";
@@ -165,6 +166,7 @@ export default function DeckScreen() {
               : () => run("flashcards")
           }
           busy={pending === "flashcards"}
+          onEdit={() => router.push(`/deck/${id}/edit-flashcards`)}
         />
 
         <StudyRow
@@ -180,6 +182,7 @@ export default function DeckScreen() {
               : () => run("quiz")
           }
           busy={pending === "quiz"}
+          onEdit={() => router.push(`/deck/${id}/edit-quiz`)}
         />
 
         <StudyRow
@@ -266,7 +269,7 @@ export default function DeckScreen() {
         </View>
       ) : null}
 
-      {remaining.length > 0 ? (
+      {remaining.length > 0 && deck.tldr ? (
         <View className="mt-7 px-gutter">
           <Text variant="overline" className="mb-2.5">
             Generate
@@ -298,12 +301,15 @@ function StudyRow({
   title,
   subtitle,
   onPress,
+  onEdit,
   busy,
   icon: IconComponent,
 }: {
   title: string;
   subtitle: string;
   onPress: () => void;
+  /** Present on anything that can also be written by hand. */
+  onEdit?: () => void;
   busy?: boolean;
   icon?: typeof ChatCircle;
 }) {
@@ -318,11 +324,22 @@ function StudyRow({
         <Text variant="heading">{busy ? "Generating" : title}</Text>
         <Text variant="caption">{subtitle}</Text>
       </View>
-      {IconComponent ? (
-        <IconComponent size={19} color={raw.inkFaint} weight="regular" />
-      ) : (
-        <CaretRight size={19} color={raw.inkFaint} weight="regular" />
-      )}
+      <View className="flex-row items-center gap-1">
+        {onEdit ? (
+          <IconButton
+            icon={PencilSimple}
+            tone="bare"
+            size="sm"
+            accessibilityLabel={`Write ${title.toLowerCase()} by hand`}
+            onPress={onEdit}
+          />
+        ) : null}
+        {IconComponent ? (
+          <IconComponent size={19} color={raw.inkFaint} weight="regular" />
+        ) : (
+          <CaretRight size={19} color={raw.inkFaint} weight="regular" />
+        )}
+      </View>
     </PressableCard>
   );
 }

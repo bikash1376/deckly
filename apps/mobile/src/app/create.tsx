@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import { X, FilePdf, Camera, Sparkle } from "phosphor-react-native";
+import { X, FilePdf, Camera, Sparkle, PencilSimple } from "phosphor-react-native";
 import { CREDIT_COST, type SourceKind } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Chip } from "@/components/ui/chip";
-import { useCreateDeck, useCreateDeckFromPdf } from "@/features/decks/hooks";
+import { useCreateDeck, useCreateDeckFromPdf, useCreateManualDeck } from "@/features/decks/hooks";
 import { useMe } from "@/features/me/hooks";
 import { ApiError } from "@/lib/api";
 import { raw } from "@/theme";
@@ -32,6 +32,7 @@ export default function CreateDeckScreen() {
   const { data: me } = useMe();
   const createDeck = useCreateDeck();
   const createFromPdf = useCreateDeckFromPdf();
+  const createManual = useCreateManualDeck();
 
   const cost = CREDIT_COST.seed;
   const credits = me?.entitlement.credits ?? 0;
@@ -96,6 +97,28 @@ export default function CreateDeckScreen() {
       );
     }
   }, [createDeck, createFromPdf, sourceKind, attachment, text, router]);
+
+  /**
+   * Build the deck by hand instead of generating it.
+   *
+   * Uses whatever is already typed as the title, so there is no second form to
+   * fill in. Costs nothing, and stays available when credits have run out,
+   * which is the whole point of having it.
+   */
+  const buildManually = useCallback(async () => {
+    const title = text.trim();
+    if (title.length < 2) {
+      setError("Type what the deck is about first, then build it yourself.");
+      return;
+    }
+    setError(null);
+    try {
+      const deck = await createManual.mutateAsync({ title, subject: "General" });
+      router.replace(`/deck/${deck.id}/edit-flashcards`);
+    } catch {
+      setError("Could not create that deck. Try again in a moment.");
+    }
+  }, [text, createManual, router]);
 
   return (
     <KeyboardAvoidingView
@@ -164,6 +187,21 @@ export default function CreateDeckScreen() {
             </View>
             <Text variant="caption" className="mt-3.5">
               Photos are read on your device. Handwriting uses 2 extra credits.
+            </Text>
+
+            <View className="mt-6 h-px bg-hairline" />
+
+            <Button
+              label="Build the cards myself"
+              variant="secondary"
+              size="md"
+              icon={PencilSimple}
+              className="mt-6"
+              loading={createManual.isPending}
+              onPress={buildManually}
+            />
+            <Text variant="caption" className="mt-2 text-center">
+              Free, and no credits used.
             </Text>
           </>
         )}

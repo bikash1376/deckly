@@ -7,6 +7,9 @@ import {
   WeakTopic,
   type CardKind,
   type CreateDeckInput,
+  type CreateManualDeckInput,
+  type Flashcards,
+  type Quiz,
 } from "@retenit/shared";
 import { useApi } from "@/lib/use-api";
 
@@ -139,6 +142,60 @@ export function useRecordAttempts(deckId: string) {
     mutationFn: (attempts: { concept: string; correct: boolean }[]) =>
       api.post(`/decks/${deckId}/attempts`, { attempts }),
     onSuccess: () => qc.invalidateQueries({ queryKey: deckKeys.weakTopics(deckId) }),
+  });
+}
+
+/**
+ * Build a deck by hand, with no model involved.
+ *
+ * Free, always. Generation is the paid product; owning a deck is not. Someone
+ * out of credits should still be able to type in the ten cards they need
+ * tonight, and someone who does not trust AI output for their subject should be
+ * able to use the app at all.
+ */
+export function useCreateManualDeck() {
+  const api = useApi();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateManualDeckInput) => api.post("/decks/manual", input, Deck),
+    onSuccess: (deck) => {
+      qc.setQueryData(deckKeys.detail(deck.id), { deck, cards: [], outline: [] });
+      qc.invalidateQueries({ queryKey: deckKeys.list() });
+    },
+  });
+}
+
+/**
+ * Replace a deck's flashcards.
+ *
+ * The server carries scheduling state across by matching card fronts, so
+ * editing a wording keeps its review history while a genuinely new card starts
+ * fresh.
+ */
+export function useSaveFlashcards(deckId: string) {
+  const api = useApi();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cards: Flashcards["cards"]) =>
+      api.put(`/decks/${deckId}/flashcards`, { cards }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: deckKeys.detail(deckId) });
+      qc.invalidateQueries({ queryKey: deckKeys.list() });
+      qc.invalidateQueries({ queryKey: ["review"] });
+    },
+  });
+}
+
+export function useSaveQuiz(deckId: string) {
+  const api = useApi();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (questions: Quiz["questions"]) =>
+      api.put(`/decks/${deckId}/quiz`, { questions }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: deckKeys.detail(deckId) }),
   });
 }
 

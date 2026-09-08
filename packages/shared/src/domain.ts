@@ -79,3 +79,17 @@ export const Entitlement = z.object({
   noteLimit: z.number().int(),
 });
 export type Entitlement = z.infer<typeof Entitlement>;
+
+/**
+ * A deck the user builds themselves, with no model involved.
+ *
+ * Manual decks cost no credits on purpose. Generation is the paid product;
+ * owning a deck is not. Someone out of credits should still be able to type in
+ * the ten cards they need tonight, and someone who does not trust AI output for
+ * their subject should be able to use the app at all.
+ */
+export const CreateManualDeckInput = z.object({
+  title: z.string().min(1).max(80),
+  subject: z.string().min(1).max(40),
+});
+export type CreateManualDeckInput = z.infer<typeof CreateManualDeckInput>;

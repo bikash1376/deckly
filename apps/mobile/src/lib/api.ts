@@ -34,7 +34,7 @@ export class ApiError extends Error {
 export type TokenGetter = () => Promise<string | null>;
 
 interface RequestOptions<T> {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   schema?: ZodType<T>;
   signal?: AbortSignal;
@@ -103,6 +103,9 @@ export function createApi(getToken: TokenGetter) {
 
     post: <T>(path: string, body?: unknown, schema?: ZodType<T>, signal?: AbortSignal) =>
       request<T>(getToken, path, { method: "POST", body, schema, signal }),
+
+    put: <T>(path: string, body?: unknown, schema?: ZodType<T>) =>
+      request<T>(getToken, path, { method: "PUT", body, schema }),
 
     patch: <T>(path: string, body?: unknown, schema?: ZodType<T>) =>
       request<T>(getToken, path, { method: "PATCH", body, schema }),
