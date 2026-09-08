@@ -1,0 +1,745 @@
+<title>Deckly Visual Direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&display=swap">
+<style>
+/* ===========================================================================
+   Deckly visual direction preview.
+
+   Two token sets live here on purpose:
+   · --page-*  the surrounding studio page. Themed light and dark.
+   · --app-*   the product itself. NEVER themed. Deckly is a light only app,
+               so the screens must look identical on either page ground.
+               These values are copied verbatim from apps/mobile/src/global.css.
+   =========================================================================== */
+
+:root{
+  --page-bg:#dad8d4;
+  --page-panel:#e7e5e2;
+  --page-ink:#141412;
+  --page-ink-muted:#5c5a56;
+  --page-ink-faint:#8b8883;
+  --page-hairline:#c7c4bf;
+  --page-frame:#2a2825;
+  --page-shadow:rgba(20,20,18,.16);
+
+  /* Product tokens, verbatim from global.css */
+  --app-bg:#edecea;
+  --app-bg-sunken:#e5e4e1;
+  --app-surface:#ffffff;
+  --app-surface-alt:#f6f5f3;
+  --app-hairline:#dedcd8;
+  --app-ink:#111111;
+  --app-ink-muted:#6b6b6b;
+  --app-ink-faint:#9c9a97;
+
+  --clay:#935b5d;        --clay-tint:#f0e5e5;
+  --slate:#71829a;       --slate-tint:#e3e7ec;
+  --sage:#8e9379;        --sage-tint:#e8eae2;
+  --mocha:#7e6e68;       --mocha-tint:#ebe6e4;
+  --eucalyptus:#6e8781;  --eucalyptus-tint:#e2e9e7;
+  --plum:#6b5f7e;        --plum-tint:#e6e3eb;
+  --amber:#e8b44a;       --amber-tint:#faf0da;
+  --success:#5c7a5e;
+  --danger:#a85449;      --danger-tint:#f5e6e3;
+
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page-bg:#17161a;
+    --page-panel:#211f24;
+    --page-ink:#f2f0ed;
+    --page-ink-muted:#a3a09b;
+    --page-ink-faint:#75726d;
+    --page-hairline:#33313a;
+    --page-frame:#0c0b0e;
+    --page-shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --page-bg:#17161a;
+  --page-panel:#211f24;
+  --page-ink:#f2f0ed;
+  --page-ink-muted:#a3a09b;
+  --page-ink-faint:#75726d;
+  --page-hairline:#33313a;
+  --page-frame:#0c0b0e;
+  --page-shadow:rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--page-bg);
+  color:var(--page-ink);
+  font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--clay);outline-offset:3px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+/* ---- masthead ---------------------------------------------------------- */
+.mast{padding:56px 0 34px;border-bottom:1px solid var(--page-hairline)}
+.brand{
+  font-family:"Inter Tight","Helvetica Neue",Arial,sans-serif;
+  font-weight:700;font-size:46px;line-height:1;letter-spacing:-2px;margin:0;
+}
+.mast p{
+  max-width:56ch;margin:14px 0 0;color:var(--page-ink-muted);font-size:16px;
+}
+.mast .stamp{
+  display:inline-block;margin-bottom:18px;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--page-ink-faint);font-weight:500;
+}
+
+/* ---- section scaffolding ----------------------------------------------- */
+section{padding:52px 0;border-bottom:1px solid var(--page-hairline)}
+section:last-of-type{border-bottom:0}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+h2{
+  font-family:"Inter Tight",Arial,sans-serif;font-weight:600;
+  font-size:26px;letter-spacing:-.8px;margin:0;text-wrap:balance;
+}
+.sec-note{color:var(--page-ink-muted);max-width:62ch;margin:0 0 30px;font-size:15px}
+
+/* ---- palette ----------------------------------------------------------- */
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:14px}
+.sw{border-radius:14px;overflow:hidden;background:var(--page-panel);border:1px solid var(--page-hairline)}
+.sw .chip{height:76px}
+.sw .info{padding:9px 11px 11px}
+.sw .nm{font-weight:600;font-size:13px}
+.sw .hx{font-family:var(--mono);font-size:11px;color:var(--page-ink-muted);letter-spacing:.02em}
+.neutrals{margin-top:14px;display:flex;flex-wrap:wrap;gap:9px}
+.nsw{
+  display:flex;align-items:center;gap:9px;padding:7px 13px 7px 8px;border-radius:999px;
+  background:var(--page-panel);border:1px solid var(--page-hairline);font-size:12px;
+}
+.nsw i{width:19px;height:19px;border-radius:50%;border:1px solid var(--page-hairline);display:block}
+.nsw b{font-weight:600}
+.nsw code{font-family:var(--mono);font-size:11px;color:var(--page-ink-muted)}
+
+/* ---- type specimen ----------------------------------------------------- */
+.spec{display:grid;gap:20px}
+.spec-row{
+  display:grid;grid-template-columns:132px 1fr;gap:22px;align-items:baseline;
+  padding-bottom:18px;border-bottom:1px solid var(--page-hairline);
+}
+.spec-row:last-child{border-bottom:0;padding-bottom:0}
+.spec-meta{font-family:var(--mono);font-size:11px;color:var(--page-ink-muted);line-height:1.7}
+.spec-meta b{display:block;font-family:"Inter",sans-serif;font-size:12px;color:var(--page-ink);font-weight:600;letter-spacing:.01em}
+.t-hero{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:44px;line-height:48px;letter-spacing:-1.4px}
+.t-display{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:32px;line-height:37px;letter-spacing:-1px}
+.t-title{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:24px;line-height:29px;letter-spacing:-.6px}
+.t-heading{font-weight:600;font-size:18px;line-height:24px;letter-spacing:-.3px}
+.t-body{font-weight:400;font-size:15px;line-height:22px}
+.t-overline{font-weight:500;font-size:11px;line-height:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--page-ink-faint)}
+
+/* ---- icon rail --------------------------------------------------------- */
+.icons{display:flex;flex-wrap:wrap;gap:10px}
+.ic{
+  width:62px;height:62px;border-radius:15px;background:var(--page-panel);
+  border:1px solid var(--page-hairline);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;
+}
+.ic svg{width:22px;height:22px;stroke:var(--page-ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ic span{font-size:8.5px;color:var(--page-ink-faint);letter-spacing:.02em}
+
+/* ---- phone frames ------------------------------------------------------ */
+.screens{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(281px,1fr));
+  gap:38px 26px;
+}
+.shot{display:flex;flex-direction:column;gap:13px}
+.phone{
+  width:281px;height:608px;border-radius:38px;padding:7px;
+  background:var(--page-frame);box-shadow:0 18px 44px var(--page-shadow);
+  flex:none;
+}
+.viewport{
+  width:267px;height:594px;border-radius:31px;overflow:hidden;position:relative;
+  background:var(--app-bg);
+}
+/* Screens are authored at true device width then scaled, so every size in the
+   markup below is the real number that ships in the app. */
+.screen{
+  width:390px;height:868px;transform:scale(.6846);transform-origin:top left;
+  background:var(--app-bg);color:var(--app-ink);position:relative;
+  font-size:15px;line-height:22px;
+}
+.cap b{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:15px;letter-spacing:-.3px;display:block}
+.cap span{font-size:13px;color:var(--page-ink-muted);display:block;margin-top:1px}
+
+/* ---- in screen primitives ---------------------------------------------- */
+.st{
+  height:52px;display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 26px 6px;font-size:14px;font-weight:600;color:var(--app-ink);
+}
+.st .dots{display:flex;gap:3px;align-items:center}
+.st .dots i{width:4px;height:4px;background:var(--app-ink);border-radius:50%;display:block}
+.pad{padding:0 20px}
+.h-hero{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:44px;line-height:48px;letter-spacing:-1.4px;margin:0}
+.h-display{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:32px;line-height:37px;letter-spacing:-1px;margin:0}
+.h-title{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:24px;line-height:29px;letter-spacing:-.6px;margin:0}
+.h-heading{font-weight:600;font-size:18px;line-height:24px;letter-spacing:-.3px;margin:0}
+.muted{color:var(--app-ink-muted)}
+.faint{color:var(--app-ink-faint)}
+.ov{font-weight:500;font-size:11px;line-height:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--app-ink-faint)}
+.cap-t{font-size:13px;line-height:18px;color:var(--app-ink-muted)}
+
+.row{display:flex;align-items:center}
+.gap8{gap:8px}.gap10{gap:10px}.gap12{gap:12px}
+.between{justify-content:space-between}
+.grow{flex:1}
+
+.iconbtn{
+  width:44px;height:44px;border-radius:999px;background:var(--app-surface);
+  display:flex;align-items:center;justify-content:center;flex:none;
+  box-shadow:0 4px 14px rgba(17,17,17,.07);
+}
+.iconbtn svg{width:20px;height:20px;stroke:var(--app-ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pillbtn{
+  height:44px;border-radius:999px;background:var(--app-surface);display:inline-flex;
+  align-items:center;gap:8px;padding:0 18px;font-weight:500;font-size:14px;
+  box-shadow:0 4px 14px rgba(17,17,17,.07);
+}
+.pillbtn svg{width:18px;height:18px;stroke:var(--app-ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.btn-ink{
+  height:54px;border-radius:999px;background:var(--app-ink);color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  font-weight:600;font-size:16px;letter-spacing:-.2px;
+}
+.btn-ink svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn-out{
+  height:54px;border-radius:999px;border:1.5px solid var(--app-ink);color:var(--app-ink);
+  display:flex;align-items:center;justify-content:center;gap:9px;font-weight:600;font-size:16px;
+}
+.card{background:var(--app-surface);border-radius:24px;box-shadow:0 8px 24px rgba(17,17,17,.06)}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 13px;
+  border-radius:999px;font-size:13px;font-weight:500;
+}
+.seg{
+  height:46px;border-radius:999px;background:var(--app-bg-sunken);padding:4px;
+  display:flex;gap:2px;
+}
+.seg > div{
+  flex:1;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:500;color:var(--app-ink-muted);
+}
+.seg > div.on{background:var(--app-surface);color:var(--app-ink);box-shadow:0 2px 8px rgba(17,17,17,.07)}
+
+.track{height:4px;border-radius:999px;background:var(--app-bg-sunken);overflow:hidden}
+.track i{display:block;height:100%;border-radius:999px}
+
+/* deck folder card, the s3 silhouette */
+.deck{position:relative;padding-top:11px}
+.deck .paper{
+  position:absolute;left:9px;right:9px;height:26px;border-radius:9px 9px 0 0;
+  background:var(--app-surface);
+}
+.deck .paper.p1{top:0;left:15px;right:15px;opacity:.55}
+.deck .paper.p2{top:5px}
+.deck .face{
+  position:relative;border-radius:14px 14px 16px 16px;aspect-ratio:1/.93;
+  display:flex;align-items:flex-end;padding:13px;
+}
+.deck .face svg{width:19px;height:19px;stroke:rgba(255,255,255,.92);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.deck .nm{font-family:"Inter Tight",sans-serif;font-weight:600;font-size:17px;line-height:21px;letter-spacing:-.4px;margin-top:11px}
+.deck .sub{font-size:12px;color:var(--app-ink-faint);margin-top:2px}
+
+/* bottom nav */
+.nav{
+  position:absolute;left:20px;right:20px;bottom:26px;height:62px;border-radius:999px;
+  background:var(--app-surface);box-shadow:0 12px 28px rgba(17,17,17,.1);
+  display:flex;align-items:center;justify-content:space-around;padding:0 8px;
+}
+.nav .tab{
+  display:flex;align-items:center;gap:7px;height:44px;padding:0 14px;border-radius:999px;
+}
+.nav .tab svg{width:22px;height:22px;stroke:var(--app-ink-faint);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav .tab.on{background:var(--app-ink);padding:0 17px}
+.nav .tab.on svg{stroke:#fff}
+.nav .tab.on span{color:#fff;font-size:14px;font-weight:600;letter-spacing:-.2px}
+.nav .tab span{display:none}
+.nav .tab.on span{display:inline}
+
+/* misc in screen bits */
+.sheetline{width:38px;height:4px;border-radius:999px;background:var(--app-hairline);margin:0 auto}
+.dropzone{
+  border:1.5px dashed var(--app-hairline);border-radius:20px;padding:26px 18px;
+  display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;
+}
+.dropzone svg{width:26px;height:26px;stroke:var(--app-ink-faint);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.optrow{
+  border:1.5px solid var(--app-hairline);border-radius:16px;padding:14px 16px;
+  display:flex;align-items:center;gap:11px;font-size:15px;
+}
+.optrow.right{border-color:var(--success);background:#eef2ee}
+.optrow.wrong{border-color:var(--danger);background:var(--danger-tint)}
+.optrow .k{
+  width:26px;height:26px;border-radius:999px;background:var(--app-bg-sunken);flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--app-ink-muted);
+}
+.optrow.right .k{background:var(--success);color:#fff}
+.optrow.wrong .k{background:var(--danger);color:#fff}
+
+.squiggle{
+  border-bottom:2px wavy var(--danger);
+  text-decoration:underline wavy var(--danger) 1.5px;text-underline-offset:3px;
+}
+
+.foot{padding:44px 0 60px;color:var(--page-ink-muted);font-size:13.5px;max-width:64ch}
+.foot code{font-family:var(--mono);font-size:12px;background:var(--page-panel);padding:1px 5px;border-radius:4px;border:1px solid var(--page-hairline)}
+
+@media (max-width:640px){
+  .wrap{padding:0 18px}
+  .brand{font-size:36px}
+  .spec-row{grid-template-columns:1fr;gap:8px}
+  .t-hero{font-size:34px;line-height:38px}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="7" width="14" height="14" rx="3"/><path d="M7 7V5.5A2.5 2.5 0 0 1 9.5 3h8A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H17"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M20 11v7.5A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-11A2.5 2.5 0 0 1 6.5 5H13"/><path d="M17.4 3.6a2 2 0 0 1 2.9 2.8L13 13.7l-3.6.9.9-3.6z"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.5 2.5 4.8 13.2a.6.6 0 0 0 .5 1h5.2l-.9 7.3 8.7-10.7a.6.6 0 0 0-.5-1h-5.2z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.7 7.7 0 0 1 15 0"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.4 8.6-1.9 4.9-4.9 1.9 1.9-4.9z"/></symbol>
+    <symbol id="i-arrow-ur" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></symbol>
+    <symbol id="i-caret-r" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5 13.9 9a2 2 0 0 0 1.2 1.2L20.5 12l-5.4 1.8A2 2 0 0 0 13.9 15L12 20.5 10.1 15a2 2 0 0 0-1.2-1.2L3.5 12l5.4-1.8A2 2 0 0 0 10.1 9z"/></symbol>
+    <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M14 3H7.5A2.5 2.5 0 0 0 5 5.5v13A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 3v5h5"/><path d="M9 16.5v-3.2h1.1a1.1 1.1 0 0 1 0 2.2H9"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5h3l1.5-2.2h7L17 8.5h3a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.7" r="3.4"/></symbol>
+    <symbol id="i-textaa" viewBox="0 0 24 24"><path d="M3 18 8 6l5 12M4.6 14.4h6.8"/><path d="M20.5 11.4v6.6M20.5 13.4a3 3 0 1 0 0 3.2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.3 12.2 2.5 2.5 4.9-4.9"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V4.2M5.5 5.2c4-2 8 2 12 0v9c-4 2-8-2-12 0"/></symbol>
+    <symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 21c3.6 0 6-2.4 6-5.6 0-4.3-4-5.4-3.3-10.4-2.4.6-4 3-4 5.2 0 1.4-1 2-1.7 1.3-.6-.6-.8-1.6-.8-2.4C6.8 10.5 6 12.4 6 15.4 6 18.6 8.4 21 12 21z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 18.5V7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v7a2.5 2.5 0 0 1-2.5 2.5H8z"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M4 9h9.5a5 5 0 0 1 0 10H8"/><path d="M7.5 5.5 4 9l3.5 3.5"/></symbol>
+    <symbol id="i-google" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><path d="M12 10.4h7.8M12 10.4v7.8"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="mast">
+    <span class="stamp">Visual direction, static preview</span>
+    <h1 class="brand">Deckly</h1>
+    <p>Every colour, size and typeface below is read straight out of
+       <code style="font-family:var(--mono);font-size:13px">apps/mobile/src/global.css</code>.
+       Nothing here is invented for the mockup, so if a screen looks wrong, the fix is a token, not a patch.
+       Screens are drawn at true 390pt width and scaled down, so proportions are real.</p>
+  </header>
+
+  <section>
+    <div class="sec-head"><h2>Deck colours</h2></div>
+    <p class="sec-note">Six identities, assigned from a hash of the deck id. A deck keeps its colour offline,
+       across devices, with no round trip. Each has a tint for quiet fills: chips, progress tracks, empty states.</p>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:var(--clay)"></div><div class="info"><div class="nm">Clay</div><div class="hx">#935B5D</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--slate)"></div><div class="info"><div class="nm">Slate</div><div class="hx">#71829A</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--sage)"></div><div class="info"><div class="nm">Sage</div><div class="hx">#8E9379</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--mocha)"></div><div class="info"><div class="nm">Mocha</div><div class="hx">#7E6E68</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--eucalyptus)"></div><div class="info"><div class="nm">Eucalyptus</div><div class="hx">#6E8781</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--plum)"></div><div class="info"><div class="nm">Plum</div><div class="hx">#6B5F7E</div></div></div>
+    </div>
+    <div class="neutrals">
+      <span class="nsw"><i style="background:#edecea"></i><b>bg</b><code>#EDECEA</code></span>
+      <span class="nsw"><i style="background:#fff"></i><b>surface</b><code>#FFFFFF</code></span>
+      <span class="nsw"><i style="background:#e5e4e1"></i><b>bg sunken</b><code>#E5E4E1</code></span>
+      <span class="nsw"><i style="background:#dedcd8"></i><b>hairline</b><code>#DEDCD8</code></span>
+      <span class="nsw"><i style="background:#111"></i><b>ink</b><code>#111111</code></span>
+      <span class="nsw"><i style="background:#6b6b6b"></i><b>ink muted</b><code>#6B6B6B</code></span>
+      <span class="nsw"><i style="background:#e8b44a"></i><b>amber</b><code>#E8B44A</code></span>
+      <span class="nsw"><i style="background:#a85449"></i><b>danger</b><code>#A85449</code></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Type</h2></div>
+    <p class="sec-note">Inter Tight for display, Inter for everything else. Two families, five weights.
+       The jump from hero to body is wide on purpose, that contrast is the whole look, so there are no
+       intermediate sizes to fill the gap with.</p>
+    <div class="spec">
+      <div class="spec-row"><div class="spec-meta"><b>hero</b>Inter Tight 600<br>44 / 48 / -1.4</div><div class="t-hero">Photosynthesis</div></div>
+      <div class="spec-row"><div class="spec-meta"><b>display</b>Inter Tight 600<br>32 / 37 / -1</div><div class="t-display">Ready to review</div></div>
+      <div class="spec-row"><div class="spec-meta"><b>title</b>Inter Tight 600<br>24 / 29 / -0.6</div><div class="t-title">French Revolution</div></div>
+      <div class="spec-row"><div class="spec-meta"><b>heading</b>Inter 600<br>18 / 24 / -0.3</div><div class="t-heading">Key concepts</div></div>
+      <div class="spec-row"><div class="spec-meta"><b>body</b>Inter 400<br>15 / 22</div><div class="t-body">Light energy is captured by chlorophyll and used to convert carbon dioxide and water into glucose, releasing oxygen as a by product.</div></div>
+      <div class="spec-row"><div class="spec-meta"><b>overline</b>Inter 500<br>11 / 14 / +0.6</div><div class="t-overline">Due today</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Icons</h2></div>
+    <p class="sec-note">Phosphor, regular weight. The reason for Phosphor over Lucide is the weight axis:
+       the bottom bar gets its active state by swapping regular for fill, so there is no second icon set to keep in sync.</p>
+    <div class="icons">
+      <div class="ic"><svg><use href="#i-cards"/></svg><span>Cards</span></div>
+      <div class="ic"><svg><use href="#i-note"/></svg><span>NotePencil</span></div>
+      <div class="ic"><svg><use href="#i-bolt"/></svg><span>Lightning</span></div>
+      <div class="ic"><svg><use href="#i-user"/></svg><span>User</span></div>
+      <div class="ic"><svg><use href="#i-plus"/></svg><span>Plus</span></div>
+      <div class="ic"><svg><use href="#i-search"/></svg><span>Search</span></div>
+      <div class="ic"><svg><use href="#i-compass"/></svg><span>Compass</span></div>
+      <div class="ic"><svg><use href="#i-sparkle"/></svg><span>Sparkle</span></div>
+      <div class="ic"><svg><use href="#i-pdf"/></svg><span>FilePdf</span></div>
+      <div class="ic"><svg><use href="#i-camera"/></svg><span>Camera</span></div>
+      <div class="ic"><svg><use href="#i-textaa"/></svg><span>TextAa</span></div>
+      <div class="ic"><svg><use href="#i-check"/></svg><span>Check</span></div>
+      <div class="ic"><svg><use href="#i-fire"/></svg><span>Fire</span></div>
+      <div class="ic"><svg><use href="#i-flag"/></svg><span>Flag</span></div>
+      <div class="ic"><svg><use href="#i-lock"/></svg><span>Lock</span></div>
+      <div class="ic"><svg><use href="#i-chat"/></svg><span>Chat</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Screens</h2></div>
+    <p class="sec-note">Eight screens covering the whole loop: sign in, decks, create, study, write, pay.
+       Bottom navigation throughout, with the active tab expanding to show its label.</p>
+
+    <div class="screens">
+
+      <!-- 1. sign in -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div class="st"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="pad" style="padding-top:70px">
+            <div style="width:56px;height:56px;border-radius:18px;background:var(--clay);display:flex;align-items:center;justify-content:center">
+              <svg style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><use href="#i-cards"/></svg>
+            </div>
+            <h1 class="h-hero" style="margin-top:34px">Learn it<br>once.</h1>
+            <p class="muted" style="font-size:17px;line-height:26px;margin-top:16px;max-width:300px">
+              Turn any topic, PDF or photo of your notes into flashcards and a quiz that remembers what you got wrong.
+            </p>
+          </div>
+          <div style="position:absolute;left:20px;right:20px;bottom:44px">
+            <div class="btn-ink"><svg><use href="#i-google"/></svg>Continue with Google</div>
+            <p class="cap-t" style="text-align:center;margin:16px 4px 0">
+              By continuing you agree to our Terms and Privacy Policy.
+            </p>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Sign in</b><span>One button. Clerk native Google flow.</span></div>
+      </div>
+
+      <!-- 2. decks -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div class="st"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="pad">
+            <div class="row between" style="margin-bottom:22px">
+              <span class="pillbtn"><svg><use href="#i-fire"/></svg>12 day streak</span>
+              <div class="iconbtn"><svg><use href="#i-search"/></svg></div>
+            </div>
+            <h1 class="h-display">Your decks</h1>
+            <div class="seg" style="margin-top:18px">
+              <div class="on">All</div><div>In progress</div><div>Done</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 14px;margin-top:22px">
+              <div class="deck">
+                <div class="paper p1"></div><div class="paper p2"></div>
+                <div class="face" style="background:var(--clay)"><svg><use href="#i-arrow-ur"/></svg></div>
+                <div class="nm">Photo<br>synthesis</div><div class="sub">7 of 14 cards done</div>
+              </div>
+              <div class="deck">
+                <div class="paper p1"></div><div class="paper p2"></div>
+                <div class="face" style="background:var(--slate)"><svg><use href="#i-arrow-ur"/></svg></div>
+                <div class="nm">French<br>Revolution</div><div class="sub">3 of 20 cards done</div>
+              </div>
+              <div class="deck">
+                <div class="paper p1"></div><div class="paper p2"></div>
+                <div class="face" style="background:var(--sage)"><svg><use href="#i-arrow-ur"/></svg></div>
+                <div class="nm">Linear<br>Algebra</div><div class="sub">Not started</div>
+              </div>
+              <div class="deck">
+                <div class="paper p1"></div><div class="paper p2"></div>
+                <div class="face" style="background:var(--plum)"><svg><use href="#i-arrow-ur"/></svg></div>
+                <div class="nm">Cell<br>Division</div><div class="sub">18 of 18 cards done</div>
+              </div>
+            </div>
+          </div>
+          <div class="nav">
+            <div class="tab on"><svg><use href="#i-cards"/></svg><span>Decks</span></div>
+            <div class="tab"><svg><use href="#i-note"/></svg></div>
+            <div class="tab"><svg><use href="#i-bolt"/></svg></div>
+            <div class="tab"><svg><use href="#i-user"/></svg></div>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Decks</b><span>The folder silhouette, six colours, progress on every card.</span></div>
+      </div>
+
+      <!-- 3. create -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div style="height:14px"></div>
+          <div class="sheetline"></div>
+          <div class="pad" style="padding-top:26px">
+            <div class="row between" style="align-items:flex-start">
+              <h1 class="h-title" style="max-width:230px">What are you studying?</h1>
+              <div class="iconbtn" style="width:36px;height:36px;box-shadow:none;background:var(--app-bg-sunken)"><svg style="width:17px;height:17px"><use href="#i-x"/></svg></div>
+            </div>
+            <div class="card" style="margin-top:22px;padding:16px 18px;min-height:104px;box-shadow:none;border:1.5px solid var(--app-ink)">
+              <div style="font-size:17px;line-height:26px">Krebs cycle, for a first year biochemistry exam<span style="display:inline-block;width:2px;height:19px;background:var(--clay);vertical-align:-4px;margin-left:2px"></span></div>
+            </div>
+            <div class="row gap8" style="margin-top:12px;flex-wrap:wrap">
+              <span class="chip" style="background:var(--clay-tint);color:var(--clay)">Biology</span>
+              <span class="chip" style="background:var(--app-bg-sunken);color:var(--app-ink-muted)">Exam prep</span>
+            </div>
+            <p class="ov" style="margin:26px 0 12px">Or start from</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="dropzone" style="padding:20px 12px"><svg><use href="#i-pdf"/></svg><span style="font-size:13px;font-weight:500">Upload PDF</span></div>
+              <div class="dropzone" style="padding:20px 12px"><svg><use href="#i-camera"/></svg><span style="font-size:13px;font-weight:500">Photo of notes</span></div>
+            </div>
+            <p class="cap-t" style="margin-top:14px">Photos are read on your device. Handwriting uses 2 extra credits.</p>
+          </div>
+          <div style="position:absolute;left:20px;right:20px;bottom:34px">
+            <div class="row between" style="margin-bottom:12px">
+              <span class="cap-t">Costs 10 credits</span>
+              <span class="cap-t" style="font-weight:500;color:var(--app-ink)">38 left this month</span>
+            </div>
+            <div class="btn-ink"><svg><use href="#i-sparkle"/></svg>Create deck</div>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Create</b><span>Topic, paste, PDF or camera. Cost shown before you spend.</span></div>
+      </div>
+
+      <!-- 4. deck detail -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div class="st"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div style="background:var(--clay);margin:0 20px;border-radius:24px;padding:20px;color:#fff">
+            <span class="chip" style="background:rgba(255,255,255,.2);color:#fff">Biology</span>
+            <h1 class="h-title" style="color:#fff;margin-top:12px">Photosynthesis</h1>
+            <p style="font-size:14px;line-height:21px;color:rgba(255,255,255,.82);margin:8px 0 0">
+              Light energy is captured by chlorophyll and used to turn carbon dioxide and water into glucose, releasing oxygen.
+            </p>
+            <div class="track" style="margin-top:16px;background:rgba(255,255,255,.25)"><i style="width:50%;background:#fff"></i></div>
+            <div class="row between" style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.82)">
+              <span>7 of 14 cards done</span><span>About 12 min</span>
+            </div>
+          </div>
+          <div class="pad" style="margin-top:22px">
+            <p class="ov" style="margin:0 0 10px">Ready</p>
+            <div class="card" style="padding:15px 17px;margin-bottom:9px">
+              <div class="row between"><div><div class="h-heading">Flashcards</div><div class="cap-t">14 cards, 6 due now</div></div><svg style="width:19px;height:19px;stroke:var(--app-ink-faint);fill:none;stroke-width:1.8"><use href="#i-caret-r"/></svg></div>
+            </div>
+            <div class="card" style="padding:15px 17px;margin-bottom:18px">
+              <div class="row between"><div><div class="h-heading">Quiz</div><div class="cap-t">8 questions, best score 6</div></div><svg style="width:19px;height:19px;stroke:var(--app-ink-faint);fill:none;stroke-width:1.8"><use href="#i-caret-r"/></svg></div>
+            </div>
+            <p class="ov" style="margin:0 0 10px">Generate</p>
+            <div class="row gap8" style="flex-wrap:wrap">
+              <span class="chip" style="background:var(--app-surface);border:1px solid var(--app-hairline)">Summary, 4</span>
+              <span class="chip" style="background:var(--app-surface);border:1px solid var(--app-hairline)">Key concepts, 3</span>
+              <span class="chip" style="background:var(--app-surface);border:1px solid var(--app-hairline)">Cheat sheet, 3</span>
+              <span class="chip" style="background:var(--app-surface);border:1px solid var(--app-hairline)">Explain simply, 2</span>
+            </div>
+          </div>
+          <div class="nav">
+            <div class="tab on"><svg><use href="#i-cards"/></svg><span>Decks</span></div>
+            <div class="tab"><svg><use href="#i-note"/></svg></div>
+            <div class="tab"><svg><use href="#i-bolt"/></svg></div>
+            <div class="tab"><svg><use href="#i-user"/></svg></div>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Deck</b><span>Seed arrives instantly. Everything else generates on tap, with its price on the chip.</span></div>
+      </div>
+
+      <!-- 5. flashcard -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div class="st"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="pad">
+            <div class="row between gap12">
+              <div class="iconbtn" style="width:36px;height:36px;box-shadow:none;background:var(--app-bg-sunken)"><svg style="width:17px;height:17px"><use href="#i-x"/></svg></div>
+              <div class="track grow"><i style="width:43%;background:var(--clay)"></i></div>
+              <span class="cap-t" style="font-weight:500">6 of 14</span>
+            </div>
+            <div class="card" style="margin-top:28px;height:392px;padding:26px;display:flex;flex-direction:column;justify-content:space-between">
+              <span class="chip" style="background:var(--clay-tint);color:var(--clay);align-self:flex-start">Light reactions</span>
+              <div>
+                <p class="ov" style="margin:0 0 12px">Answer</p>
+                <div class="h-title">In the thylakoid membrane of the chloroplast.</div>
+              </div>
+              <div class="row between">
+                <span class="cap-t">Tap to flip</span>
+                <svg style="width:19px;height:19px;stroke:var(--app-ink-faint);fill:none;stroke-width:1.7;stroke-linecap:round"><use href="#i-flag"/></svg>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:22px">
+              <div class="btn-out" style="height:50px;font-size:15px;border-color:var(--danger);color:var(--danger)">Again</div>
+              <div class="btn-out" style="height:50px;font-size:15px">Hard</div>
+              <div class="btn-out" style="height:50px;font-size:15px">Good</div>
+              <div class="btn-ink" style="height:50px;font-size:15px">Easy</div>
+            </div>
+            <p class="cap-t" style="text-align:center;margin-top:12px">Next review in 4 days</p>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Flashcards</b><span>Four grades feeding SM-2. Report flag sits on the card itself.</span></div>
+      </div>
+
+      <!-- 6. quiz -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div class="st"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="pad">
+            <div class="row between gap12">
+              <div class="iconbtn" style="width:36px;height:36px;box-shadow:none;background:var(--app-bg-sunken)"><svg style="width:17px;height:17px"><use href="#i-x"/></svg></div>
+              <div class="track grow"><i style="width:62%;background:var(--slate)"></i></div>
+              <span class="cap-t" style="font-weight:500">5 of 8</span>
+            </div>
+            <h1 class="h-title" style="margin-top:26px">Which molecule is the final electron acceptor in the light reactions?</h1>
+            <div style="display:grid;gap:9px;margin-top:22px">
+              <div class="optrow"><span class="k">A</span>Oxygen</div>
+              <div class="optrow wrong"><span class="k"><svg style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.4"><use href="#i-x"/></svg></span>Carbon dioxide</div>
+              <div class="optrow right"><span class="k"><svg style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.4"><use href="#i-check"/></svg></span>NADP plus</div>
+              <div class="optrow"><span class="k">D</span>Water</div>
+            </div>
+            <div class="card" style="margin-top:18px;padding:16px 18px;background:var(--slate-tint);box-shadow:none">
+              <p class="ov" style="margin:0 0 6px;color:var(--slate)">Why</p>
+              <p style="margin:0;font-size:14px;line-height:21px">NADP plus takes the electrons at the end of the chain to form NADPH. Water is the donor at the start, not the acceptor.</p>
+            </div>
+          </div>
+          <div style="position:absolute;left:20px;right:20px;bottom:34px">
+            <div class="btn-ink">Next question</div>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Quiz</b><span>The explanation is the point. Wrong answers feed weak topic tracking.</span></div>
+      </div>
+
+      <!-- 7. writing pad -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div class="st"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="pad">
+            <div class="row between">
+              <div class="iconbtn" style="width:36px;height:36px;box-shadow:none;background:transparent"><svg style="width:19px;height:19px"><use href="#i-undo"/></svg></div>
+              <span class="cap-t">Saved just now</span>
+              <div class="iconbtn" style="width:36px;height:36px;box-shadow:none;background:transparent"><svg style="width:19px;height:19px"><use href="#i-sparkle"/></svg></div>
+            </div>
+            <h1 class="h-title" style="margin-top:18px">Essay plan, Industrial Revolution</h1>
+            <p style="font-size:17px;line-height:27px;margin-top:16px">
+              The shift from cottage industry to factory production <span style="background:var(--clay-tint);border-radius:3px;padding:1px 2px">reshaped where families lived and how they earned</span>, pulling labour into cities faster than housing could follow.
+            </p>
+            <p style="font-size:17px;line-height:27px;margin-top:14px" class="muted">
+              Sanitation <span class="squiggle">were</span> the bottleneck. Cholera outbreaks in 1832 and 1849 forced the first public health acts.
+            </p>
+          </div>
+          <div style="position:absolute;left:20px;right:20px;bottom:104px">
+            <div class="card" style="padding:14px 16px">
+              <div class="row between" style="margin-bottom:10px">
+                <span class="ov" style="color:var(--danger)">Grammar</span>
+                <span class="cap-t">1 of 2</span>
+              </div>
+              <div style="font-size:15px"><span style="text-decoration:line-through;color:var(--app-ink-faint)">were</span> &nbsp;<b>was</b></div>
+              <div class="cap-t" style="margin-top:2px">Subject and verb disagree</div>
+              <div class="row gap8" style="margin-top:12px">
+                <div class="btn-ink grow" style="height:42px;font-size:14px">Fix</div>
+                <div class="btn-out grow" style="height:42px;font-size:14px">Ignore</div>
+              </div>
+            </div>
+          </div>
+          <div class="nav">
+            <div class="tab"><svg><use href="#i-cards"/></svg></div>
+            <div class="tab on"><svg><use href="#i-note"/></svg><span>Pad</span></div>
+            <div class="tab"><svg><use href="#i-bolt"/></svg></div>
+            <div class="tab"><svg><use href="#i-user"/></svg></div>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Pad</b><span>Selection based actions. Enhance offers options, it never overwrites your voice.</span></div>
+      </div>
+
+      <!-- 8. paywall -->
+      <div class="shot">
+        <div class="phone"><div class="viewport"><div class="screen">
+          <div style="height:14px"></div>
+          <div class="sheetline"></div>
+          <div class="pad" style="padding-top:30px">
+            <div class="row gap8" style="margin-bottom:20px">
+              <span style="width:36px;height:36px;border-radius:12px;background:var(--clay)"></span>
+              <span style="width:36px;height:36px;border-radius:12px;background:var(--sage)"></span>
+              <span style="width:36px;height:36px;border-radius:12px;background:var(--slate)"></span>
+              <span style="width:36px;height:36px;border-radius:12px;background:var(--plum)"></span>
+            </div>
+            <h1 class="h-display">You have used<br>your 5 free decks.</h1>
+            <p class="muted" style="font-size:16px;line-height:24px;margin-top:12px">Reviewing stays free forever. Premium is for making new material.</p>
+            <div style="display:grid;gap:9px;margin-top:24px">
+              <div class="card" style="padding:16px 18px;border:2px solid var(--app-ink);box-shadow:none">
+                <div class="row between">
+                  <div>
+                    <div class="row gap8"><span class="h-heading">Yearly</span><span class="chip" style="background:var(--amber-tint);color:#8a6410;height:22px;font-size:11px">Save 42 percent</span></div>
+                    <div class="cap-t">Works out at 145 rupees a month</div>
+                  </div>
+                  <div style="text-align:right"><div class="h-heading">1740</div><div class="cap-t">per year</div></div>
+                </div>
+              </div>
+              <div class="card" style="padding:16px 18px;box-shadow:none;border:1.5px solid var(--app-hairline)">
+                <div class="row between">
+                  <div><div class="h-heading">Monthly</div><div class="cap-t">Cancel any time</div></div>
+                  <div style="text-align:right"><div class="h-heading">249</div><div class="cap-t">per month</div></div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:20px;display:grid;gap:9px">
+              <div class="row gap10"><svg style="width:18px;height:18px;stroke:var(--success);fill:none;stroke-width:1.9;flex:none"><use href="#i-check"/></svg><span style="font-size:14px">600 credits every month</span></div>
+              <div class="row gap10"><svg style="width:18px;height:18px;stroke:var(--success);fill:none;stroke-width:1.9;flex:none"><use href="#i-check"/></svg><span style="font-size:14px">Unlimited notes in the pad</span></div>
+              <div class="row gap10"><svg style="width:18px;height:18px;stroke:var(--success);fill:none;stroke-width:1.9;flex:none"><use href="#i-check"/></svg><span style="font-size:14px">Handwriting and diagram scanning</span></div>
+            </div>
+          </div>
+          <div style="position:absolute;left:20px;right:20px;bottom:34px">
+            <div class="btn-ink">Start yearly</div>
+            <p class="cap-t" style="text-align:center;margin:12px 0 0">Billed through Google Play. Restore purchase</p>
+          </div>
+        </div></div></div>
+        <div class="cap"><b>Paywall</b><span>Triggered at the moment of need, not on launch. Review stays free.</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Bottom navigation</h2></div>
+    <p class="sec-note">Four tabs, floating pill, 20pt off each edge. The active tab expands to reveal its label
+       and the icon crosses from regular to fill. Spring on press, with a light haptic.</p>
+    <div style="background:var(--app-bg);border-radius:24px;padding:34px 20px;border:1px solid var(--page-hairline);max-width:430px">
+      <div style="position:relative;height:62px">
+        <div class="nav" style="position:static;left:auto;right:auto;bottom:auto">
+          <div class="tab on"><svg><use href="#i-cards"/></svg><span>Decks</span></div>
+          <div class="tab"><svg><use href="#i-note"/></svg></div>
+          <div class="tab"><svg><use href="#i-bolt"/></svg></div>
+          <div class="tab"><svg><use href="#i-user"/></svg></div>
+        </div>
+      </div>
+      <div style="height:18px"></div>
+      <div style="position:relative;height:62px">
+        <div class="nav" style="position:static;left:auto;right:auto;bottom:auto">
+          <div class="tab"><svg><use href="#i-cards"/></svg></div>
+          <div class="tab"><svg><use href="#i-note"/></svg></div>
+          <div class="tab on"><svg><use href="#i-bolt"/></svg><span>Review</span></div>
+          <div class="tab"><svg><use href="#i-user"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <p><b>What is not settled yet.</b> The deck folder shape is CSS here and will be an SVG path in the app,
+      so the tab silhouette will be slightly crisper. Prices are placeholders. Illustration style for empty
+      states is still open, the reference screens use abstract collage art that we would need to licence or commission.</p>
+    <p style="margin-top:14px">Copy across the whole app avoids em dashes and emoji. That rule is enforced in code by
+      <code>cleanCopy()</code> in <code>src/lib/copy.ts</code>, which runs over model output before it is stored,
+      because models produce em dashes whatever the prompt says.</p>
+  </div>
+
+</div>
