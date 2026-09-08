@@ -45,7 +45,7 @@ export default function ProfileScreen() {
         <IconButton
           icon={DotsThree}
           accessibilityLabel="Settings and account"
-          onPress={() => router.push("/settings")}
+          onPress={() => router.push("/settings/menu")}
         />
       </View>
 

@@ -86,7 +86,6 @@ export default function RootLayout() {
                   options={{ presentation: "modal", animation: "slide_from_bottom" }}
                 />
                 <Stack.Screen name="search" />
-                <Stack.Screen name="settings/index" />
                 <Stack.Screen name="settings/about" />
                 <Stack.Screen name="settings/reminders" />
               </Stack>

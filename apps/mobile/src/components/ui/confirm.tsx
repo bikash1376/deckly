@@ -2,13 +2,21 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { Modal, Pressable, View } from "react-native";
-import Animated, { FadeIn, FadeOut, ZoomIn, ZoomOut } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { Text } from "./text";
@@ -93,12 +101,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           </Animated.View>
 
           {options ? (
-            <Animated.View
-              entering={ZoomIn.duration(180).springify().damping(18)}
-              exiting={ZoomOut.duration(120)}
-              style={shadow.floating}
-              className="w-full rounded-sheet bg-surface p-6"
-            >
+            <DialogBody>
               <Text variant="title">{options.title}</Text>
               {options.body ? (
                 <Text variant="body" className="mt-2 text-ink-muted">
@@ -118,11 +121,42 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                   onPress={() => settle(false)}
                 />
               </View>
-            </Animated.View>
+            </DialogBody>
           ) : null}
         </View>
       </Modal>
     </ConfirmContext.Provider>
+  );
+}
+
+/**
+ * A calm entrance.
+ *
+ * The previous version combined `.duration()` with `.springify()`, which are
+ * two different animations arguing over the same value: the spring overshoots,
+ * the duration clips it, and the result wobbles. This is a short scale from
+ * 0.94 with an eased curve, so the dialog appears rather than bounces. A
+ * confirmation is not a moment for personality.
+ */
+function DialogBody({ children }: { children: ReactNode }) {
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withTiming(1, { duration: 170, easing: Easing.out(Easing.quad) });
+  }, [progress]);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ scale: 0.94 + progress.value * 0.06 }],
+  }));
+
+  return (
+    <Animated.View
+      style={[style, shadow.floating]}
+      className="w-full rounded-sheet bg-surface p-6"
+    >
+      {children}
+    </Animated.View>
   );
 }
 

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { ArrowLeft, TextAa, MagnifyingGlass, X } from "phosphor-react-native";
 import type { GrammarIssue } from "@retenit/shared";
@@ -19,6 +18,7 @@ import {
   useNoteToDeck,
 } from "@/features/notes/hooks";
 import { PadSettingsSheet } from "@/features/pad/settings-sheet";
+import { LookupSheet } from "@/features/pad/lookup-sheet";
 import { useTypography, resolveTextStyle } from "@/features/pad/typography";
 import { usePadFonts } from "@/features/pad/fonts";
 import { useGrammar, segment, applyReplacement } from "@/features/pad/grammar";
@@ -40,6 +40,7 @@ export default function NoteEditorScreen() {
   const [body, setBody] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const [lookupQuery, setLookupQuery] = useState<string | null>(null);
   const [activeIssue, setActiveIssue] = useState<GrammarIssue | null>(null);
 
   const createNote = useCreateNote();
@@ -130,21 +131,15 @@ export default function NoteEditorScreen() {
   const hasSelection = selected.length > 1;
 
   /**
-   * Search the selected text.
+   * Look up the selection.
    *
-   * Opens an in-app browser tab rather than rendering results in a sheet.
-   * Google's results cannot legitimately be embedded or scraped, and a real
-   * search API is a paid key. A Custom Tab is free, allowed, and still feels
-   * in-app: it slides over, and back returns you to the exact cursor position.
+   * Opens the ordinary Google results page in a sheet over the note, so the
+   * answer arrives without losing the cursor or leaving the app. Nothing is
+   * reformatted: it is the page Google serves, in a WebView.
    */
-  const lookUp = useCallback(async () => {
+  const lookUp = useCallback(() => {
     if (!hasSelection) return;
-    const query = encodeURIComponent(selected.slice(0, 200));
-    await WebBrowser.openBrowserAsync(`https://www.google.com/search?q=${query}`, {
-      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
-      toolbarColor: raw.bg,
-      controlsColor: raw.clay,
-    }).catch(() => {});
+    setLookupQuery(selected.slice(0, 200));
   }, [hasSelection, selected]);
 
   const showSegments = typography.grammarEnabled && issues.length > 0;
@@ -333,6 +328,10 @@ export default function NoteEditorScreen() {
             />
           </Card>
         </Animated.View>
+      ) : null}
+
+      {lookupQuery ? (
+        <LookupSheet query={lookupQuery} onClose={() => setLookupQuery(null)} />
       ) : null}
 
       <PadSettingsSheet
