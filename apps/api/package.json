@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "bash ./deploy.sh",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "deploy:secrets": "bash ./deploy.sh --secrets",
+    "deploy:dry": "bash ./deploy.sh --dry"
   },
   "dependencies": {
     "@ai-sdk/groq": "^4.0.37",
