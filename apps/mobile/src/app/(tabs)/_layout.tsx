@@ -4,10 +4,15 @@ import { View } from "react-native";
 
 import { TabBar } from "@/components/tab-bar";
 import { useDueCount } from "@/features/review/hooks";
+import { useConfigurePurchases } from "@/features/billing/purchases";
 
 export default function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
   const { data: dueCount = 0 } = useDueCount();
+
+  // Identify the RevenueCat user with the Clerk id, so a purchase lands on the
+  // right account rather than on whoever signed in first on this install.
+  useConfigurePurchases();
 
   // Hold on a plain ground rather than a spinner. Clerk resolves from the
   // keystore in a few frames, and a spinner that flashes for 80ms is worse

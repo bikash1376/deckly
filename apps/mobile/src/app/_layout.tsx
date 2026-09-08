@@ -72,6 +72,13 @@ export default function RootLayout() {
                   options={{ presentation: "modal", animation: "slide_from_bottom" }}
                 />
                 <Stack.Screen name="deck/[id]" />
+                <Stack.Screen name="note/[id]" />
+                <Stack.Screen
+                  name="scan"
+                  options={{ presentation: "modal", animation: "slide_from_bottom" }}
+                />
+                <Stack.Screen name="search" />
+                <Stack.Screen name="settings/reminders" />
               </Stack>
             </View>
           </SafeAreaProvider>

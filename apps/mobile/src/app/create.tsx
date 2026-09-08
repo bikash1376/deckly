@@ -1,0 +1,247 @@
+import { useCallback, useMemo, useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, View, Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
+import { X, FilePdf, Camera, Sparkle } from "phosphor-react-native";
+import { CREDIT_COST, type SourceKind } from "@deckly/shared";
+
+import { Text } from "@/components/ui/text";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { Input } from "@/components/ui/input";
+import { Chip } from "@/components/ui/chip";
+import { useCreateDeck, useUploadTarget } from "@/features/decks/hooks";
+import { useMe } from "@/features/me/hooks";
+import { ApiError } from "@/lib/api";
+import { raw } from "@/theme";
+
+/** Beyond this a topic is really pasted material, so we treat it as such. */
+const TEXT_THRESHOLD = 400;
+const MAX_PDF_BYTES = 20 * 1024 * 1024;
+
+export default function CreateDeckScreen() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const [text, setText] = useState("");
+  const [attachment, setAttachment] = useState<{
+    kind: Exclude<SourceKind, "topic" | "text">;
+    name: string;
+    key: string;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data: me } = useMe();
+  const createDeck = useCreateDeck();
+  const signUpload = useUploadTarget();
+
+  const cost = CREDIT_COST.seed;
+  const credits = me?.entitlement.credits ?? 0;
+  const affordable = credits >= cost;
+
+  const sourceKind: SourceKind = attachment
+    ? "pdf"
+    : text.trim().length > TEXT_THRESHOLD
+      ? "text"
+      : "topic";
+
+  const canSubmit = useMemo(
+    () => (attachment ? true : text.trim().length >= 3) && !createDeck.isPending,
+    [attachment, text, createDeck.isPending],
+  );
+
+  const pickPdf = useCallback(async () => {
+    setError(null);
+    const result = await DocumentPicker.getDocumentAsync({
+      type: "application/pdf",
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled || !result.assets[0]) return;
+
+    const file = result.assets[0];
+    if ((file.size ?? 0) > MAX_PDF_BYTES) {
+      setError("That PDF is over 20 MB. Try splitting it or picking a shorter section.");
+      return;
+    }
+
+    try {
+      const target = await signUpload.mutateAsync({
+        fileName: file.name,
+        contentType: "application/pdf",
+        size: file.size ?? 0,
+      });
+
+      // Straight to R2. A 20MB body through the Worker would blow the request
+      // limit and cost us CPU time for no reason.
+      const blob = await (await fetch(file.uri)).blob();
+      const put = await fetch(target.uploadUrl, {
+        method: "PUT",
+        body: blob,
+        headers: { "Content-Type": "application/pdf" },
+      });
+      if (!put.ok) throw new Error("upload failed");
+
+      setAttachment({ kind: "pdf", name: file.name, key: target.key });
+    } catch {
+      setError("Could not upload that file. Check your connection and try again.");
+    }
+  }, [signUpload]);
+
+  const pickPhoto = useCallback(async () => {
+    setError(null);
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      setError("Camera access is off. Turn it on in Settings to scan your notes.");
+      return;
+    }
+    // OCR runs on device first, so the route to a deck from a photo is handled
+    // by the scan screen rather than here.
+    router.push("/scan");
+  }, [router]);
+
+  const submit = useCallback(async () => {
+    setError(null);
+    try {
+      const deck = await createDeck.mutateAsync({
+        sourceKind,
+        source: attachment ? attachment.key : text.trim(),
+        fileName: attachment?.name,
+      });
+      router.replace(`/deck/${deck.id}`);
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.isOutOfCredits) {
+        router.replace("/paywall");
+        return;
+      }
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : "Could not create that deck. Try again in a moment.",
+      );
+    }
+  }, [createDeck, sourceKind, attachment, text, router]);
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      className="flex-1 bg-bg"
+    >
+      <View className="items-center pb-1 pt-3.5">
+        <View className="h-1 w-9 rounded-pill bg-hairline" />
+      </View>
+
+      <ScrollView
+        contentContainerClassName="px-gutter pb-8 pt-5"
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="flex-row items-start justify-between">
+          <Text variant="title" className="max-w-[230px]">
+            What are you studying?
+          </Text>
+          <IconButton
+            icon={X}
+            tone="sunken"
+            size="sm"
+            accessibilityLabel="Close"
+            onPress={() => router.back()}
+          />
+        </View>
+
+        {attachment ? (
+          <View className="mt-6 flex-row items-center gap-3 rounded-tile border-[1.5px] border-ink bg-surface p-4">
+            <FilePdf size={24} color={raw.clay} weight="regular" />
+            <View className="flex-1">
+              <Text variant="subheading" numberOfLines={1}>
+                {attachment.name}
+              </Text>
+              <Text variant="caption">Ready to turn into a deck</Text>
+            </View>
+            <IconButton
+              icon={X}
+              tone="bare"
+              size="sm"
+              accessibilityLabel="Remove file"
+              onPress={() => setAttachment(null)}
+            />
+          </View>
+        ) : (
+          <>
+            <Input
+              value={text}
+              onChangeText={setText}
+              multiline
+              autoFocus
+              placeholder="A topic, or paste your notes here"
+              containerClassName="mt-6"
+              className="min-h-[112px]"
+            />
+            {sourceKind === "text" ? (
+              <Chip label="Reading this as your notes" tone="clay" className="mt-3" />
+            ) : null}
+
+            <Text variant="overline" className="mb-3 mt-7">
+              Or start from
+            </Text>
+            <View className="flex-row gap-2.5">
+              <SourceTile icon={FilePdf} label="Upload PDF" onPress={pickPdf} busy={signUpload.isPending} />
+              <SourceTile icon={Camera} label="Photo of notes" onPress={pickPhoto} />
+            </View>
+            <Text variant="caption" className="mt-3.5">
+              Photos are read on your device. Handwriting uses 2 extra credits.
+            </Text>
+          </>
+        )}
+
+        {error ? (
+          <Text variant="caption" className="mt-4 text-danger">
+            {error}
+          </Text>
+        ) : null}
+      </ScrollView>
+
+      <View className="px-gutter" style={{ paddingBottom: insets.bottom + 20 }}>
+        <View className="mb-3 flex-row items-center justify-between">
+          <Text variant="caption">Costs {cost} credits</Text>
+          <Text variant="caption" className={affordable ? "text-ink" : "text-danger"}>
+            {credits} left this month
+          </Text>
+        </View>
+        <Button
+          label={affordable ? "Create deck" : "Get more credits"}
+          icon={affordable ? Sparkle : undefined}
+          loading={createDeck.isPending}
+          disabled={!canSubmit && affordable}
+          onPress={affordable ? submit : () => router.push("/paywall")}
+        />
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+function SourceTile({
+  icon: IconComponent,
+  label,
+  onPress,
+  busy,
+}: {
+  icon: typeof FilePdf;
+  label: string;
+  onPress: () => void;
+  busy?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ busy: !!busy }}
+      onPress={onPress}
+      disabled={busy}
+      className="flex-1 items-center gap-2.5 rounded-tile border-[1.5px] border-dashed border-hairline px-3 py-5"
+    >
+      <IconComponent size={26} color={raw.inkFaint} weight="regular" />
+      <Text variant="label">{busy ? "Uploading" : label}</Text>
+    </Pressable>
+  );
+}

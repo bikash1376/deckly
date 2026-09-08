@@ -9,10 +9,6 @@
     "userInterfaceStyle": "light",
     "backgroundColor": "#EDECEA",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "app.deckly.mobile"
-    },
     "android": {
       "package": "app.deckly.mobile",
       "adaptiveIcon": {
@@ -23,7 +19,6 @@
       "predictiveBackGestureEnabled": false,
       "edgeToEdgeEnabled": true
     },
-    "web": { "output": "static", "favicon": "./assets/images/favicon.png" },
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -39,16 +34,33 @@
       ],
       [
         "expo-document-picker",
-        { "iCloudContainerEnvironment": "Production" }
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Deckly needs your photos so you can turn a picture of your notes into a deck.",
+          "cameraPermission": "Deckly needs the camera so you can scan a page of notes into a deck."
+        }
       ],
       [
         "expo-notifications",
-        { "color": "#935B5D" }
-      ]
+        {
+          "color": "#935B5D"
+        }
+      ],
+      "./plugins/with-unbundled-mlkit"
     ],
-    "experiments": { "typedRoutes": true, "reactCompiler": true },
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
     "extra": {
-      "eas": { "projectId": "00000000-0000-0000-0000-000000000000" }
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
     }
   }
 }

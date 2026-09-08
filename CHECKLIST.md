@@ -22,7 +22,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Push to `bikash1376/deckly`
 - [x] Load Inter / Inter Tight via `expo-font`
 - [ ] Init `react-native-reusables` and pull the primitives
-- [ ] `.env.example` for both app and Worker
+- [x] `.env.example` for the app, `.dev.vars.example` for the Worker
 - [ ] Rename project dir to `deckly` (space in path breaks local Gradle builds)
 
 ## 1. Design system (components)
@@ -45,11 +45,11 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 
 ## 2. Auth (Clerk)
 
-- [ ] `ClerkProvider` + `expo-secure-store` token cache
-- [ ] Google OAuth sign-in (native flow)
+- [x] `ClerkProvider` + `expo-secure-store` token cache
+- [x] Google OAuth sign-in (native flow)
 - [ ] Onboarding carousel (see `s2` — 4 dots, "Your cards and create deck")
-- [ ] Auth route guard / redirect logic
-- [ ] Account deletion screen — **required by Play Store**
+- [x] Auth route guard / redirect logic
+- [x] Account deletion screen with confirm dialog
 
 ## 2b. App data layer
 
@@ -84,40 +84,61 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 
 ## 5. OCR — photo of notes → deck
 
-- [ ] On-device OCR via ML Kit — free, offline, printed text
-- [ ] **Use the unbundled ML Kit variant** (`com.google.android.gms:play-services-mlkit-text-recognition`)
-      via config plugin — ~0 MB APK cost vs ~4 MB bundled. Verify which variant the RN
-      wrapper pulls by default (most default to bundled) and override the Gradle dep.
-- [ ] Prefetch the OCR model during onboarding so the first scan has no wait
-- [ ] Camera + gallery capture flow (`expo-image-picker`)
-- [ ] Confidence heuristic: too few chars → offer server fallback
+- [x] On-device OCR via ML Kit
+- [x] **Unbundled ML Kit variant** via `plugins/with-unbundled-mlkit.js`.
+      Confirmed the wrapper pulls all five bundled scripts unconditionally
+      (Latin + Chinese + Devanagari + Japanese + Korean, roughly 20 MB). The
+      plugin excludes them and adds `play-services-mlkit-text-recognition`.
+- [x] `prefetchOcrModel` helper (still needs calling from onboarding)
+- [x] Camera + gallery capture flow, multi-page
+- [x] Confidence heuristic, offers the stronger model when a page reads thin
 - [ ] Server vision fallback for handwriting / diagrams / math (Groq vision), charged in credits
-- [ ] Multi-page capture → single deck
+- [x] Multi-page capture into one deck
+
+## 5b. Screens
+
+- [x] Sign in (`(auth)/sign-in`)
+- [x] Decks (`(tabs)/index`)
+- [x] Pad (`(tabs)/pad`)
+- [x] Review (`(tabs)/review`)
+- [x] Profile (`(tabs)/profile`)
+- [x] Create deck (`create`, modal)
+- [x] Scan notes (`scan`, modal)
+- [x] Paywall (`paywall`, modal)
+- [x] Deck detail (`deck/[id]`)
+- [x] Flashcards (`deck/[id]/flashcards`)
+- [x] Quiz (`deck/[id]/quiz`)
+- [x] Ask this deck (`deck/[id]/chat`)
+- [x] Note editor (`note/[id]`)
+- [x] Search (`search`)
+- [x] Reminder settings (`settings/reminders`)
+- [ ] Onboarding carousel
+- [ ] Error boundary screen
 
 ## 6. Study features
 
-- [ ] Deck detail screen — card sections, generate-on-tap
-- [ ] Flashcards — swipe, flip, hint
-- [ ] Spaced repetition (SM-2 lite) + `reviews` scheduling
-- [ ] Daily review queue + `expo-notifications` reminder
-- [ ] Quiz — 4 options, explanation on answer, weak-topic tracking
-- [ ] Streaks + weekly progress
-- [ ] Deck chat screen
+- [x] Deck detail screen, card sections, generate-on-tap
+- [x] Flashcards, flip and grade with predicted intervals
+- [x] Spaced repetition client mirror, server owns the schedule
+- [x] Daily review queue + reminder scheduling and settings screen
+- [x] Quiz, explanation on answer, weak topics on the results screen
+- [x] Streaks surfaced on Decks, Review and Profile
+- [x] Deck chat screen
 
 ## 7. Writing pad (minimal)
 
-- [ ] Notes list screen
-- [ ] Editor — markdown-backed `TextInput`, formatting toolbar
-- [ ] Selection-based AI actions: Grammar check, Enhance (options, never silent overwrite)
+- [x] Notes list screen with free-tier counter
+- [x] Editor with autosave and selection tracking
+- [x] Selection actions: Grammar check and Enhance, options never auto-applied
 - [ ] Inline grammar issue highlighting + accept/dismiss
-- [ ] "Turn this note into a deck"
-- [ ] Autosave + offline draft
+- [x] Turn this note into a deck
+- [x] Debounced autosave
 
 ## 8. Monetization (RevenueCat)
 
-- [ ] RevenueCat SDK init + user identity linked to Clerk id
+- [x] RevenueCat SDK init, identity linked to the Clerk id
 - [ ] Products: monthly + annual subscription
-- [ ] Paywall screen
+- [x] Paywall screen with offerings, purchase and restore
 - [ ] Webhook → Worker → `entitlements` table
 - [ ] Credit enforcement on every generation endpoint
 - [ ] Free tier: 5 generations/month, 2 notes, unlimited review
@@ -130,7 +151,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [ ] Privacy policy URL (hosted)
 - [ ] Data Safety form
 - [ ] Account deletion URL (public, outside the app)
-- [ ] **In-app "Report" button on every AI-generated card** — required for GenAI apps
+- [x] **In-app Report affordance** on generated cards, flashcards and quiz questions
 - [ ] App icon, adaptive icon, feature graphic, screenshots
 - [ ] Store listing copy + ASO title: `Deckly — AI Study Decks`
 - [ ] EAS build profiles (dev / preview / production AAB)

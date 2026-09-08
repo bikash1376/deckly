@@ -1,0 +1,32 @@
+# Copy to `apps/api/.dev.vars` for local `wrangler dev`.
+#
+# These are ALL secrets. `.dev.vars` is gitignored and must stay that way.
+# For deployed environments do not put them here: push each one with
+#   pnpm --filter @deckly/api exec wrangler secret put NAME
+# so they live in Cloudflare rather than in the repo or in wrangler.jsonc.
+
+# Neon > your project > Connection string > pooled.
+# Must be the pooled connection: the Worker uses the HTTP driver, and the
+# direct connection will not work from a Worker at all.
+DATABASE_URL=postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/deckly?sslmode=require
+
+# Clerk > API Keys > Secret key. Used to verify the JWT on every request.
+CLERK_SECRET_KEY=sk_test_
+
+# Clerk > API Keys > Publishable key. Same value the app uses; the Worker needs
+# it to resolve the token issuer.
+CLERK_PUBLISHABLE_KEY=pk_test_
+
+# The AI gateway. Groq is the launch model, routed through a gateway so
+# swapping providers is a config change rather than a code change.
+AI_GATEWAY_API_KEY=
+GROQ_API_KEY=gsk_
+
+# RevenueCat > Project > Integrations > Webhooks > Authorization header value.
+# The Worker rejects any webhook that does not present this, otherwise anyone
+# who finds the URL can grant themselves premium.
+REVENUECAT_WEBHOOK_SECRET=
+
+# RevenueCat > Project > API keys > Secret key. Used to read entitlements back
+# when a webhook is missed.
+REVENUECAT_SECRET_KEY=
