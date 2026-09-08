@@ -14,8 +14,14 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Scaffold Expo app (SDK 57, RN 0.86, expo-router, TypeScript)
 - [x] `packages/shared` — Zod schemas shared between app and Worker
 - [x] Design tokens from `/ref` (palette, spacing, radius, shadow)
-- [ ] Typography scale + Inter / Inter Tight font loading
-- [ ] Install mobile dependencies
+- [x] Pin **Expo SDK 54** (RN 0.81, React 19.1) and reinstall the tree against it
+- [x] Install mobile dependencies
+- [x] Uniwind + Tailwind v4 wired (`metro.config.js`, `src/global.css`)
+- [x] Design system as `@theme` tokens — colours, type scale, radii, gutter
+- [x] `SPEC.md` — stack, architecture, data model, conventions
+- [x] Push to `bikash1376/deckly`
+- [ ] Load Inter / Inter Tight via `expo-font`
+- [ ] Init `react-native-reusables` and pull the primitives
 - [ ] `.env.example` for both app and Worker
 - [ ] Rename project dir to `deckly` (space in path breaks local Gradle builds)
 
