@@ -28,6 +28,7 @@ import InterTight_700Bold from "@expo-google-fonts/inter-tight/700Bold/InterTigh
 import { tokenCache } from "@/lib/token-cache";
 import { env } from "@/lib/env";
 import { queryClient, persistOptions } from "@/lib/query-client";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { ConfirmProvider } from "@/components/ui/confirm";
 import { raw } from "@/theme";
 
@@ -57,7 +58,8 @@ export default function RootLayout() {
       <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
         <GestureHandlerRootView className="flex-1">
           <SafeAreaProvider>
-            <ConfirmProvider>
+            <BottomSheetModalProvider>
+              <ConfirmProvider>
               <View className="flex-1 bg-bg">
               <StatusBar style="dark" backgroundColor={raw.bg} />
               <Stack
@@ -90,7 +92,8 @@ export default function RootLayout() {
                 <Stack.Screen name="settings/reminders" />
               </Stack>
               </View>
-            </ConfirmProvider>
+              </ConfirmProvider>
+            </BottomSheetModalProvider>
           </SafeAreaProvider>
         </GestureHandlerRootView>
       </PersistQueryClientProvider>

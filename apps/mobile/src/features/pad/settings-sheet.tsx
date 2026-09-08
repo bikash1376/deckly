@@ -1,10 +1,10 @@
-import { Pressable, ScrollView, Switch, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 import {
   CardsIcon as Cards,
 } from "phosphor-react-native";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetRow } from "@/components/ui/sheet";
+import { Sheet, SheetRow, SheetScrollView } from "@/components/ui/sheet";
 import { cn } from "@/lib/cn";
 import { raw } from "@/theme";
 import {
@@ -42,9 +42,9 @@ export function PadSettingsSheet({
 
   return (
     <Sheet visible={visible} onClose={onClose} title="Writing">
-      {/* No fixed height. The parent sheet caps itself against the window,
-          so shrinking to fit here is what lets this actually scroll. */}
-      <ScrollView showsVerticalScrollIndicator={false} className="shrink">
+      {/* Sheet aware: scrolls while there is content left, then hands the
+          gesture back to the sheet so a pull at the top still dismisses it. */}
+      <SheetScrollView>
         <SheetRow label="Typeface">
           <View className="gap-2">
             {FONT_FAMILIES.map((family) => {
@@ -185,7 +185,7 @@ export function PadSettingsSheet({
             Reset to default
           </Text>
         </Pressable>
-      </ScrollView>
+      </SheetScrollView>
     </Sheet>
   );
 }

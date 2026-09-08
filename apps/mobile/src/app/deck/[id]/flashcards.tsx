@@ -7,7 +7,6 @@ import * as Haptics from "expo-haptics";
 import {
   XIcon as X,
   FlagIcon as Flag,
-  DotsThreeVerticalIcon as DotsThreeVertical,
   CardsIcon,
 } from "phosphor-react-native";
 import { Flashcards as FlashcardsSchema, type ReviewGrade } from "@retenit/shared";
@@ -143,15 +142,6 @@ export default function FlashcardsScreen() {
         <Text variant="label">
           {completed} of {cards.length}
         </Text>
-        <IconButton
-          icon={Flag}
-          tone="bare"
-          size="sm"
-          accessibilityLabel="Report this card"
-          onPress={() =>
-            cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
-          }
-        />
       </View>
 
       <FlipCard
@@ -183,10 +173,10 @@ export default function FlashcardsScreen() {
             <View className="flex-row items-center justify-between">
               <Text variant="caption">How well did you know it?</Text>
               <IconButton
-                icon={DotsThreeVertical}
-                tone="sunken"
+                icon={Flag}
+                tone="bare"
                 size="sm"
-                accessibilityLabel="Hard, Good or Easy"
+                accessibilityLabel="More options"
                 onPress={() => setGradesOpen(true)}
               />
             </View>
@@ -230,6 +220,9 @@ export default function FlashcardsScreen() {
         onClose={() => setGradesOpen(false)}
         onGrade={answer}
         intervals={intervals}
+        onReport={() =>
+          cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
+        }
       />
 
     </View>

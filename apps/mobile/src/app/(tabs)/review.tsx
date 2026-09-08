@@ -8,7 +8,6 @@ import {
   LightningIcon as Lightning,
   FireIcon as Fire,
   FlagIcon as Flag,
-  DotsThreeVerticalIcon as DotsThreeVertical,
 } from "phosphor-react-native";
 import type { ReviewGrade } from "@retenit/shared";
 
@@ -159,13 +158,6 @@ export default function ReviewScreen() {
       <View className="mt-4 flex-row items-center gap-3">
         <Progress value={reviewed / Math.max(cards.length, 1)} className="flex-1" />
         <Text variant="label">{queue.length} left</Text>
-        <IconButton
-          icon={Flag}
-          tone="bare"
-          size="sm"
-          accessibilityLabel="Report this card"
-          onPress={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
-        />
       </View>
 
       {/* Takes the space left over after the action area below has had its
@@ -206,10 +198,10 @@ export default function ReviewScreen() {
             <View className="flex-row items-center justify-between">
               <Text variant="caption">How well did you know it?</Text>
               <IconButton
-                icon={DotsThreeVertical}
-                tone="sunken"
+                icon={Flag}
+                tone="bare"
                 size="sm"
-                accessibilityLabel="Hard, Good or Easy"
+                accessibilityLabel="More options"
                 onPress={() => setGradesOpen(true)}
               />
             </View>
@@ -251,6 +243,7 @@ export default function ReviewScreen() {
         onClose={() => setGradesOpen(false)}
         onGrade={answer}
         intervals={intervals}
+        onReport={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
       />
 
     </View>

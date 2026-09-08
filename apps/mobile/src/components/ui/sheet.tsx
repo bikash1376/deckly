@@ -1,25 +1,31 @@
-import { type ReactNode, useEffect } from "react";
-import { Modal, Pressable, useWindowDimensions, View } from "react-native";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { useCallback, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useWindowDimensions, View } from "react-native";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+  BottomSheetView,
+  type BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "@/lib/cn";
-import { shadow } from "@/theme";
+import { raw } from "@/theme";
 import { Text } from "./text";
 
 /**
- * Bottom sheet built on the platform Modal.
+ * Bottom sheet, built on @gorhom/bottom-sheet.
  *
- * Drag the handle down to dismiss, tap the backdrop, or press system back.
- * The drag is bound to the handle area rather than the whole sheet, because a
- * pan on the body would fight every scroll view inside it for the same vertical
- * gesture, and losing that fight makes a list feel sticky.
+ * The hand rolled version put a Pan gesture inside a React Native Modal, and
+ * gestures do not reach handlers inside a Modal unless its content is wrapped
+ * in its own GestureHandlerRootView. The drag silently did nothing, which is
+ * the failure this replaces.
+ *
+ * This library does not use RN's Modal at all. It renders through its own
+ * portal inside the existing gesture root, so the drag, the momentum, the
+ * backdrop fade and the interaction between the sheet's own scrolling and the
+ * pan all work without the Modal boundary in the way.
+ *
+ * The component API is unchanged, so nothing calling it had to move.
  */
 export interface SheetProps {
   visible: boolean;
@@ -29,88 +35,87 @@ export interface SheetProps {
   className?: string;
 }
 
-/** Past this, releasing dismisses rather than springing back. */
-const DISMISS_DISTANCE = 90;
-const DISMISS_VELOCITY = 800;
-
 export function Sheet({ visible, onClose, title, children, className }: SheetProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
-
-  // Capped against the real window rather than a fixed pixel height. A hard
-  // coded cap taller than a small phone's screen pushes the sheet's own
-  // scroll area off the bottom, which reads as "it will not scroll".
-  const maxHeight = height * 0.85;
-
-  const translateY = useSharedValue(0);
+  const ref = useRef<BottomSheetModal>(null);
 
   useEffect(() => {
-    if (visible) translateY.value = 0;
-  }, [visible, translateY]);
+    if (visible) ref.current?.present();
+    else ref.current?.dismiss();
+  }, [visible]);
 
-  const drag = Gesture.Pan()
-    .onChange((event) => {
-      // Downwards only. Dragging up should not lift the sheet off its edge.
-      translateY.value = Math.max(0, translateY.value + event.changeY);
-    })
-    .onEnd((event) => {
-      const shouldClose =
-        translateY.value > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
+  // Index -1 is dismissed. Reporting it lets the parent's `visible` follow a
+  // drag or a backdrop tap, rather than only a button press.
+  const onChange = useCallback(
+    (index: number) => {
+      if (index === -1) onClose();
+    },
+    [onClose],
+  );
 
-      if (shouldClose) {
-        translateY.value = withTiming(height, { duration: 180 }, (finished) => {
-          if (finished) runOnJS(onClose)();
-        });
-      } else {
-        translateY.value = withSpring(0, { damping: 20, stiffness: 260 });
-      }
-    });
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.4}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
 
-  const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
+  const style = useMemo(() => ({ backgroundColor: raw.bg }), []);
+  const handleStyle = useMemo(() => ({ backgroundColor: raw.hairline, width: 36 }), []);
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      // The platform's slide, for the same reason as the dialog: a Reanimated
-      // entrance inside a Modal replays every time Android remounts the
-      // content. Only the drag below is animated here, and a gesture cannot
-      // replay on mount.
-      animationType="slide"
-      statusBarTranslucent
-      onRequestClose={onClose}
+    <BottomSheetModal
+      ref={ref}
+      onChange={onChange}
+      // Sized to its content rather than a fixed snap point, so a short sheet
+      // does not leave half a screen of empty ground beneath it.
+      enableDynamicSizing
+      maxDynamicContentSize={height * 0.85}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      backgroundStyle={style}
+      handleIndicatorStyle={handleStyle}
     >
-      <View className="flex-1 justify-end">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-          onPress={onClose}
-          className="absolute inset-0 bg-ink/40"
-        />
+      <BottomSheetView
+        style={{ paddingBottom: insets.bottom + 20 }}
+        className={cn("px-gutter pt-1", className)}
+      >
+        {title ? (
+          <Text variant="heading" className="mb-4">
+            {title}
+          </Text>
+        ) : null}
+        {children}
+      </BottomSheetView>
+    </BottomSheetModal>
+  );
+}
 
-        <Animated.View
-          style={[sheetStyle, shadow.floating, { paddingBottom: insets.bottom + 20, maxHeight }]}
-          className={cn("rounded-t-sheet bg-bg px-gutter pt-3", className)}
-        >
-          <GestureDetector gesture={drag}>
-            {/* Padded well beyond the visible bar so the grab area is a real
-                target rather than a 4pt line. */}
-            <View className="-mx-gutter items-center px-gutter pb-3 pt-1">
-              <View className="h-1 w-9 rounded-pill bg-hairline" />
-            </View>
-          </GestureDetector>
-
-          {title ? (
-            <Text variant="heading" className="mb-4">
-              {title}
-            </Text>
-          ) : null}
-          {children}
-        </Animated.View>
-      </View>
-    </Modal>
+/**
+ * Scrollable sheet content.
+ *
+ * A plain ScrollView inside a sheet fights the sheet's own pan for the same
+ * vertical gesture. This one is aware of the sheet: it scrolls when there is
+ * content left to scroll, and hands the gesture back to the sheet at the top.
+ */
+export function SheetScrollView({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <BottomSheetScrollView showsVerticalScrollIndicator={false} className={className}>
+      {children}
+    </BottomSheetScrollView>
   );
 }
 
@@ -138,3 +143,5 @@ export function SheetRow({
     </View>
   );
 }
+
+export type { BottomSheet };
