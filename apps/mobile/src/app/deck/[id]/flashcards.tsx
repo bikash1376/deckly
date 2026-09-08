@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { X, Flag, Cards as CardsIcon } from "phosphor-react-native";
+import { X, Flag, DotsThreeVertical, Cards as CardsIcon } from "phosphor-react-native";
 import { Flashcards as FlashcardsSchema, type ReviewGrade } from "@retenit/shared";
 
 import { FlipCard } from "@/components/flip-card";
+import { GradeSheet } from "@/features/review/grade-sheet";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -26,14 +27,8 @@ import { shadow } from "@/theme";
  * than measured, so revealing the answer does not resize the card above it and
  * make the text jump while it is being read.
  */
-const ACTION_AREA_HEIGHT = 12 + 66 + 10 + 66;
-
-const GRADES: { grade: ReviewGrade; label: string }[] = [
-  { grade: "again", label: "Again" },
-  { grade: "hard", label: "Hard" },
-  { grade: "good", label: "Good" },
-  { grade: "easy", label: "Easy" },
-];
+/** One row of 46pt buttons with a caption beneath, plus the space above. */
+const ACTION_AREA_HEIGHT = 12 + 66;
 
 export default function FlashcardsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -54,6 +49,7 @@ export default function FlashcardsScreen() {
   const [queue, setQueue] = useState<number[]>([]);
   const [completed, setCompleted] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [gradesOpen, setGradesOpen] = useState(false);
 
   const cardRecord = useMemo(
     () => data?.cards.find((c) => c.kind === "flashcards"),
@@ -142,6 +138,15 @@ export default function FlashcardsScreen() {
         <Text variant="label">
           {completed} of {cards.length}
         </Text>
+        <IconButton
+          icon={Flag}
+          tone="bare"
+          size="sm"
+          accessibilityLabel="Report this card"
+          onPress={() =>
+            cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
+          }
+        />
       </View>
 
       <FlipCard
@@ -158,18 +163,7 @@ export default function FlashcardsScreen() {
               </Text>
               <Text variant="title">{current.front}</Text>
             </View>
-            <View className="flex-row items-center justify-between">
-              <Text variant="caption">{current.hint ?? "Tap to flip"}</Text>
-              <IconButton
-                icon={Flag}
-                tone="bare"
-                size="sm"
-                accessibilityLabel="Report this card"
-                onPress={() =>
-                  cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
-                }
-              />
-            </View>
+            <Text variant="caption">{current.hint ?? "Tap to flip"}</Text>
           </View>
         }
         back={
@@ -184,49 +178,55 @@ export default function FlashcardsScreen() {
             <View className="flex-row items-center justify-between">
               <Text variant="caption">How well did you know it?</Text>
               <IconButton
-                icon={Flag}
-                tone="bare"
+                icon={DotsThreeVertical}
+                tone="sunken"
                 size="sm"
-                accessibilityLabel="Report this card"
-                onPress={() =>
-                  cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
-                }
+                accessibilityLabel="Hard, Good or Easy"
+                onPress={() => setGradesOpen(true)}
               />
             </View>
           </View>
         }
       />
 
+      {/* Again and Next sit below the card. Hard, Good and Easy live behind the
+          icon on it, because they only change how far out the card is pushed. */}
       <View
         style={{ height: ACTION_AREA_HEIGHT, marginBottom: insets.bottom + 12 }}
-        className="justify-end pt-4"
+        className="justify-end pt-3"
       >
         {revealed ? (
-          <Animated.View entering={FadeIn.duration(180)} className="flex-row flex-wrap gap-2.5">
-            {GRADES.map((item) => (
-              <View key={item.grade} className="min-w-[46%] flex-1">
-                <Button
-                  label={item.label}
-                  size="md"
-                  variant={
-                    item.grade === "again"
-                      ? "destructive"
-                      : item.grade === "easy"
-                        ? "primary"
-                        : "secondary"
-                  }
-                  onPress={() => answer(item.grade)}
-                />
-                <Text variant="caption" className="mt-1 text-center text-ink-faint">
-                  {intervals[item.grade]}
-                </Text>
-              </View>
-            ))}
+          <Animated.View entering={FadeIn.duration(180)} className="flex-row gap-2.5">
+            <View className="flex-1">
+              <Button
+                label="Again"
+                size="md"
+                variant="destructive"
+                onPress={() => answer("again")}
+              />
+              <Text variant="caption" className="mt-1 text-center text-ink-faint">
+                {intervals.again}
+              </Text>
+            </View>
+            <View className="flex-1">
+              <Button label="Next" size="md" onPress={() => answer("good")} />
+              <Text variant="caption" className="mt-1 text-center text-ink-faint">
+                {intervals.good}
+              </Text>
+            </View>
           </Animated.View>
         ) : (
           <Button label="Show answer" onPress={reveal} />
         )}
       </View>
+
+      <GradeSheet
+        visible={gradesOpen}
+        onClose={() => setGradesOpen(false)}
+        onGrade={answer}
+        intervals={intervals}
+      />
+
     </View>
   );
 }

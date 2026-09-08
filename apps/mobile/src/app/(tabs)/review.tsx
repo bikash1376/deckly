@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Lightning, Fire, Flag } from "phosphor-react-native";
+import { Lightning, Fire, Flag, DotsThreeVertical } from "phosphor-react-native";
 import type { ReviewGrade } from "@retenit/shared";
 
 import { FlipCard } from "@/components/flip-card";
+import { GradeSheet } from "@/features/review/grade-sheet";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -24,20 +25,13 @@ import { raw, shadow } from "@/theme";
 const TAB_BAR_CLEARANCE = 62 + 10;
 
 /**
- * Height reserved for the grade buttons.
+ * Height reserved for the action row.
  *
- * Two rows of 46pt buttons each with a caption beneath (66), the gap between
- * the rows (10), and the space above (12). The previous 148 was six points
- * short, which clipped the bottom row and stole the difference from the card.
+ * One row of 46pt buttons with a caption beneath (66), plus the space above.
+ * Hard, Good and Easy moved into a sheet, so this is half what it was and the
+ * card gets the difference.
  */
-const ACTION_AREA_HEIGHT = 12 + 66 + 10 + 66;
-
-const GRADES: { grade: ReviewGrade; label: string }[] = [
-  { grade: "again", label: "Again" },
-  { grade: "hard", label: "Hard" },
-  { grade: "good", label: "Good" },
-  { grade: "easy", label: "Easy" },
-];
+const ACTION_AREA_HEIGHT = 12 + 66;
 
 /**
  * The daily queue, mixed across every deck.
@@ -64,6 +58,7 @@ export default function ReviewScreen() {
   const [queue, setQueue] = useState<number[]>([]);
   const [reviewed, setReviewed] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [gradesOpen, setGradesOpen] = useState(false);
 
   const cards = data?.cards ?? [];
 
@@ -159,6 +154,13 @@ export default function ReviewScreen() {
       <View className="mt-4 flex-row items-center gap-3">
         <Progress value={reviewed / Math.max(cards.length, 1)} className="flex-1" />
         <Text variant="label">{queue.length} left</Text>
+        <IconButton
+          icon={Flag}
+          tone="bare"
+          size="sm"
+          accessibilityLabel="Report this card"
+          onPress={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
+        />
       </View>
 
       {/* Takes the space left over after the action area below has had its
@@ -182,18 +184,9 @@ export default function ReviewScreen() {
                 </Text>
               ) : null}
             </View>
-            <View className="flex-row items-center justify-between">
-              <Text variant="caption">
-                {current.lapses > 2 ? "You have missed this one before" : "Tap to flip"}
-              </Text>
-              <IconButton
-                icon={Flag}
-                tone="bare"
-                size="sm"
-                accessibilityLabel="Report this card"
-                onPress={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
-              />
-            </View>
+            <Text variant="caption">
+              {current.lapses > 2 ? "You have missed this one before" : "Tap to flip"}
+            </Text>
           </View>
         }
         back={
@@ -208,47 +201,53 @@ export default function ReviewScreen() {
             <View className="flex-row items-center justify-between">
               <Text variant="caption">How well did you know it?</Text>
               <IconButton
-                icon={Flag}
-                tone="bare"
+                icon={DotsThreeVertical}
+                tone="sunken"
                 size="sm"
-                accessibilityLabel="Report this card"
-                onPress={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
+                accessibilityLabel="Hard, Good or Easy"
+                onPress={() => setGradesOpen(true)}
               />
             </View>
           </View>
         }
       />
 
-      {/* Fixed height, always present. Reserving the space means revealing the
-          answer does not resize the card underneath it, which on a long answer
-          would make the text jump as you read it. */}
-      <View style={{ height: ACTION_AREA_HEIGHT }} className="justify-end pt-4">
+      {/* Two answers on the card, the finer grades behind the icon on it. Most
+          reviews are "I knew it" or "I did not"; Hard and Easy only shift how
+          far out it goes, which is tuning rather than answering. */}
+      <View style={{ height: ACTION_AREA_HEIGHT }} className="justify-end pt-3">
         {revealed ? (
-          <Animated.View entering={FadeIn.duration(180)} className="flex-row flex-wrap gap-2.5">
-            {GRADES.map((item) => (
-              <View key={item.grade} className="min-w-[46%] flex-1">
-                <Button
-                  label={item.label}
-                  size="md"
-                  variant={
-                    item.grade === "again"
-                      ? "destructive"
-                      : item.grade === "easy"
-                        ? "primary"
-                        : "secondary"
-                  }
-                  onPress={() => answer(item.grade)}
-                />
-                <Text variant="caption" className="mt-1 text-center text-ink-faint">
-                  {intervals[item.grade]}
-                </Text>
-              </View>
-            ))}
+          <Animated.View entering={FadeIn.duration(180)} className="flex-row gap-2.5">
+            <View className="flex-1">
+              <Button
+                label="Again"
+                size="md"
+                variant="destructive"
+                onPress={() => answer("again")}
+              />
+              <Text variant="caption" className="mt-1 text-center text-ink-faint">
+                {intervals.again}
+              </Text>
+            </View>
+            <View className="flex-1">
+              <Button label="Next" size="md" onPress={() => answer("good")} />
+              <Text variant="caption" className="mt-1 text-center text-ink-faint">
+                {intervals.good}
+              </Text>
+            </View>
           </Animated.View>
         ) : (
           <Button label="Show answer" onPress={() => setRevealed(true)} />
         )}
       </View>
+
+      <GradeSheet
+        visible={gradesOpen}
+        onClose={() => setGradesOpen(false)}
+        onGrade={answer}
+        intervals={intervals}
+      />
+
     </View>
   );
 }
