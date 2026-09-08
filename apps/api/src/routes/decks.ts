@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql, count } from "drizzle-orm";
 import {
   CreateDeckInput,
   CardKind,
@@ -8,7 +8,7 @@ import {
   DECK_COLORS,
   type DeckColor,
 } from "@deckly/shared";
-import { createDb, decks, cards, reviews, uploadTickets } from "@/db";
+import { createDb, decks, cards, reviews, uploadTickets, quizAttempts } from "@/db";
 import { debit, refund } from "@/lib/credits";
 import { errors } from "@/lib/errors";
 import { generateSeed, generateCard, answerQuestion } from "@/ai/generate";
@@ -314,6 +314,84 @@ route.post("/:id/chat", async (c) => {
   }
 
   return c.json(cleanDeep({ reply }));
+});
+
+/**
+ * Record how a quiz went, one row per question.
+ *
+ * Submitted as a batch when the quiz finishes rather than per answer. A quiz is
+ * eight questions; eight round trips to write eight tiny rows would be slower
+ * for the user and no more durable, since abandoning halfway means the attempt
+ * did not really happen.
+ */
+route.post("/:id/attempts", async (c) => {
+  const db = createDb(c.env.DATABASE_URL);
+  const userId = c.get("userId");
+  const deckId = c.req.param("id");
+
+  const body = (await c.req.json().catch(() => null)) as
+    | { attempts?: { concept?: string; correct?: boolean }[] }
+    | null;
+
+  const attempts = (body?.attempts ?? []).filter(
+    (a): a is { concept: string; correct: boolean } =>
+      typeof a.concept === "string" && a.concept.length > 0 && typeof a.correct === "boolean",
+  );
+
+  if (attempts.length === 0) return c.json({ recorded: 0 });
+  if (attempts.length > 50) throw errors.invalid("That is more answers than a quiz has.");
+
+  const owned = await db
+    .select({ id: decks.id })
+    .from(decks)
+    .where(and(eq(decks.id, deckId), eq(decks.userId, userId)))
+    .limit(1);
+
+  if (!owned[0]) throw errors.notFound("That deck");
+
+  await db.insert(quizAttempts).values(
+    attempts.map((a) => ({
+      userId,
+      deckId,
+      concept: a.concept.slice(0, 200),
+      correct: a.correct,
+    })),
+  );
+
+  return c.json({ recorded: attempts.length });
+});
+
+/**
+ * Concepts this user keeps getting wrong, worst first.
+ *
+ * Across every attempt, not just the last one: a concept missed once is noise,
+ * the same concept missed three times over a fortnight is the thing to revise.
+ */
+route.get("/:id/weak-topics", async (c) => {
+  const db = createDb(c.env.DATABASE_URL);
+  const userId = c.get("userId");
+  const deckId = c.req.param("id");
+
+  const rows = await db
+    .select({
+      concept: quizAttempts.concept,
+      total: count(),
+      wrong: sql<number>`count(*) filter (where not ${quizAttempts.correct})`,
+    })
+    .from(quizAttempts)
+    .where(and(eq(quizAttempts.deckId, deckId), eq(quizAttempts.userId, userId)))
+    .groupBy(quizAttempts.concept)
+    .having(sql`count(*) filter (where not ${quizAttempts.correct}) > 0`)
+    .orderBy(sql`count(*) filter (where not ${quizAttempts.correct}) desc`)
+    .limit(10);
+
+  return c.json(
+    rows.map((r) => ({
+      concept: r.concept,
+      wrong: Number(r.wrong),
+      total: Number(r.total),
+    })),
+  );
 });
 
 route.delete("/:id", async (c) => {

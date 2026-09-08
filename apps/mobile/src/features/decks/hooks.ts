@@ -5,6 +5,7 @@ import {
   DeckDetail,
   Card,
   UploadTarget,
+  WeakTopic,
   type CardKind,
   type CreateDeckInput,
 } from "@deckly/shared";
@@ -14,6 +15,7 @@ export const deckKeys = {
   all: ["decks"] as const,
   list: () => [...deckKeys.all, "list"] as const,
   detail: (id: string) => [...deckKeys.all, "detail", id] as const,
+  weakTopics: (id: string) => [...deckKeys.all, "weak", id] as const,
 };
 
 export function useDecks() {
@@ -94,6 +96,34 @@ export function useUploadTarget() {
   return useMutation({
     mutationFn: (input: { fileName: string; contentType: string; size: number }) =>
       api.post("/uploads/sign", input, UploadTarget),
+  });
+}
+
+/**
+ * Concepts this deck keeps catching the user out on, worst first.
+ *
+ * Read from every attempt on the server rather than the last quiz in local
+ * state: a concept missed once is noise, the same one missed three times over
+ * a fortnight is the thing to revise.
+ */
+export function useWeakTopics(deckId: string) {
+  const api = useApi();
+  return useQuery({
+    queryKey: deckKeys.weakTopics(deckId),
+    queryFn: ({ signal }) =>
+      api.get(`/decks/${deckId}/weak-topics`, z.array(WeakTopic), signal),
+    enabled: !!deckId,
+  });
+}
+
+/** Submitted as one batch when a quiz finishes, not per answer. */
+export function useRecordAttempts(deckId: string) {
+  const api = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (attempts: { concept: string; correct: boolean }[]) =>
+      api.post(`/decks/${deckId}/attempts`, { attempts }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: deckKeys.weakTopics(deckId) }),
   });
 }
 

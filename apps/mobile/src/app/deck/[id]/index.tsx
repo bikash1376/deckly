@@ -20,7 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton, SkeletonCardBlock } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CardContent } from "@/features/decks/card-content";
-import { useDeck, useGenerateCard, useReportCard } from "@/features/decks/hooks";
+import { useDeck, useGenerateCard, useReportCard, useWeakTopics } from "@/features/decks/hooks";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { deckClass, raw } from "@/theme";
@@ -49,6 +49,7 @@ export default function DeckScreen() {
   const router = useRouter();
 
   const { data, isLoading, isError } = useDeck(id);
+  const { data: weakTopics } = useWeakTopics(id);
   const generate = useGenerateCard(id);
   const report = useReportCard();
 
@@ -188,6 +189,27 @@ export default function DeckScreen() {
           onPress={() => router.push(`/deck/${id}/chat`)}
         />
       </View>
+
+      {weakTopics && weakTopics.length > 0 ? (
+        <View className="mt-7 px-gutter">
+          <Text variant="overline" className="mb-2.5">
+            Keeps catching you out
+          </Text>
+          <Card className="gap-3 p-4">
+            {weakTopics.map((topic) => (
+              <View key={topic.concept} className="flex-row items-center justify-between gap-3">
+                <Text variant="subheading" className="flex-1">
+                  {topic.concept}
+                </Text>
+                <Chip
+                  label={`${topic.wrong} of ${topic.total} wrong`}
+                  tone={topic.wrong / topic.total > 0.5 ? "danger" : "neutral"}
+                />
+              </View>
+            ))}
+          </Card>
+        </View>
+      ) : null}
 
       {outline.length > 0 && cards.length === 0 ? (
         <View className="mt-7 px-gutter">

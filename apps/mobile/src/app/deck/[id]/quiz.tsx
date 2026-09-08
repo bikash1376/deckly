@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -13,7 +13,7 @@ import { Card } from "@/components/ui/card";
 import { IconButton } from "@/components/ui/icon-button";
 import { Progress } from "@/components/ui/progress";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useDeck, useReportCard } from "@/features/decks/hooks";
+import { useDeck, useReportCard, useRecordAttempts } from "@/features/decks/hooks";
 import { cn } from "@/lib/cn";
 import { deckClass, raw } from "@/theme";
 
@@ -26,11 +26,14 @@ export default function QuizScreen() {
 
   const { data } = useDeck(id);
   const report = useReportCard();
+  const recordAttempts = useRecordAttempts(id);
 
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [wrongConcepts, setWrongConcepts] = useState<string[]>([]);
+  const [attempts, setAttempts] = useState<{ concept: string; correct: boolean }[]>([]);
+  const submitted = useRef(false);
 
   const cardRecord = useMemo(
     () => data?.cards.find((c) => c.kind === "quiz"),
@@ -58,6 +61,7 @@ export default function QuizScreen() {
       ).catch(() => {});
 
       setPicked(option);
+      setAttempts((a) => [...a, { concept: current.concept, correct }]);
       if (correct) setScore((s) => s + 1);
       else setWrongConcepts((w) => [...w, current.concept]);
     },
@@ -68,6 +72,14 @@ export default function QuizScreen() {
     setPicked(null);
     setIndex((i) => i + 1);
   }, []);
+
+  // Submitted once, when the quiz is actually finished. Abandoning halfway
+  // should not count against a concept the user never got to answer properly.
+  useEffect(() => {
+    if (!done || submitted.current || attempts.length === 0) return;
+    submitted.current = true;
+    recordAttempts.mutate(attempts);
+  }, [done, attempts, recordAttempts]);
 
   if (!cardRecord || questions.length === 0) {
     return (
@@ -123,6 +135,8 @@ export default function QuizScreen() {
               setScore(0);
               setPicked(null);
               setWrongConcepts([]);
+              setAttempts([]);
+              submitted.current = false;
             }}
           />
         </View>

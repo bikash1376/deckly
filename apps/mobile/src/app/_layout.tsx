@@ -7,28 +7,24 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { ClerkProvider } from "@clerk/clerk-expo";
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from "@expo-google-fonts/inter";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+} from "@expo-google-fonts/inter";
 import { InterTight_600SemiBold, InterTight_700Bold } from "@expo-google-fonts/inter-tight";
 
 import { tokenCache } from "@/lib/token-cache";
 import { env } from "@/lib/env";
+import { queryClient, persistOptions } from "@/lib/query-client";
 import { raw } from "@/theme";
 
-SplashScreen.preventAutoHideAsync().catch(() => {});
+export { ErrorBoundary } from "@/components/error-boundary";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // Generated cards never change once written, so refetching them on every
-      // focus would spend the user's data to redraw identical text.
-      staleTime: 60_000,
-      retry: 2,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -49,7 +45,7 @@ export default function RootLayout() {
 
   return (
     <ClerkProvider publishableKey={env.clerkPublishableKey} tokenCache={tokenCache}>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
         <GestureHandlerRootView className="flex-1">
           <SafeAreaProvider>
             <View className="flex-1 bg-bg">
@@ -83,7 +79,7 @@ export default function RootLayout() {
             </View>
           </SafeAreaProvider>
         </GestureHandlerRootView>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </ClerkProvider>
   );
 }

@@ -1,4 +1,5 @@
 import TextRecognition from "@react-native-ml-kit/text-recognition";
+import { File, Paths } from "expo-file-system";
 
 /**
  * On device OCR, with a server vision fallback.
@@ -34,20 +35,47 @@ export async function recognise(imageUri: string): Promise<OcrResult> {
   };
 }
 
+/** A 1x1 white PNG. Small enough to be free, real enough to be a valid image. */
+const WARMUP_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+let warmed = false;
+
 /**
- * Warm the Play Services model so the first real scan does not sit waiting.
+ * Warm the Play Services text recognition model.
  *
  * Because the app uses the unbundled ML Kit variant (see
  * plugins/with-unbundled-mlkit.js), the model is fetched on demand rather than
- * shipped in the APK. Running one throwaway recognition during onboarding pulls
- * it down while the user is reading, instead of while they are waiting.
+ * shipped in the APK, so the very first scan would otherwise sit waiting on a
+ * download. Constructing a recogniser is what triggers that fetch, so running
+ * one throwaway pass while the user is reading onboarding moves the wait
+ * somewhere they will not notice it.
  *
- * Failure is fine and silent: it just means the first scan pays the download.
+ * Entirely best effort. If Play Services defers the download, or the write
+ * fails, or the module is simply unavailable, the first real scan pays the cost
+ * exactly as it would have anyway. Nothing here is allowed to throw.
  */
-export async function prefetchOcrModel(sampleUri: string): Promise<void> {
+export async function prefetchOcrModel(): Promise<void> {
+  if (warmed) return;
+  warmed = true;
+
   try {
-    await TextRecognition.recognize(sampleUri);
+    const file = new File(Paths.cache, "deckly-ocr-warmup.png");
+    if (!file.exists) {
+      file.create({ overwrite: true });
+      file.write(base64ToBytes(WARMUP_PNG_BASE64));
+    }
+    await TextRecognition.recognize(file.uri);
   } catch {
-    // Nothing to do. The model downloads on first real use instead.
+    // Deliberately silent. A failed warmup is invisible to the user; a thrown
+    // one during onboarding would not be.
+    warmed = false;
   }
+}
+
+function base64ToBytes(base64: string): Uint8Array {
+  const binary = globalThis.atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
 }

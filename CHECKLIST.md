@@ -40,6 +40,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] `EmptyState`
 - [x] `TabBar` — floating pill, expanding active tab, regular-to-fill icon
 - [x] `usePressScale` — the shared spring + haptic press feel
+- [x] `Button` gained an `inverse` variant for deck-coloured grounds
 - [ ] `Sheet` — bottom sheet wrapper
 - [ ] `DeckStack` — layered deck hero from `s1`
 
@@ -47,7 +48,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 
 - [x] `ClerkProvider` + `expo-secure-store` token cache
 - [x] Google OAuth sign-in (native flow)
-- [ ] Onboarding carousel (see `s2` — 4 dots, "Your cards and create deck")
+- [x] Onboarding carousel, three slides, gated on a SecureStore flag
 - [x] Auth route guard / redirect logic
 - [x] Account deletion screen with confirm dialog
 
@@ -59,7 +60,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] TanStack Query hooks: decks, review, notes, me
 - [x] SM-2 lite scheduler mirrored client side (`src/lib/srs.ts`)
 - [x] `cleanCopy` / `cleanDeep` applied to every parsed response
-- [ ] Offline cache persistence
+- [x] Offline cache persistence (queries only, never `me`, never mutations)
 
 ## 3. Backend — Worker API
 
@@ -69,6 +70,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [ ] Migrations wired (`drizzle-kit`)
 - [ ] Credit ledger — server is the only source of truth
 - [ ] R2 bucket + presigned upload for PDFs and images
+- [x] Quiz attempts recorded, weak topics aggregated across every attempt
 - [ ] Rate limiting per user
 - [ ] Error taxonomy + structured logging
 
@@ -89,7 +91,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
       Confirmed the wrapper pulls all five bundled scripts unconditionally
       (Latin + Chinese + Devanagari + Japanese + Korean, roughly 20 MB). The
       plugin excludes them and adds `play-services-mlkit-text-recognition`.
-- [x] `prefetchOcrModel` helper (still needs calling from onboarding)
+- [x] `prefetchOcrModel`, called from onboarding
 - [x] Camera + gallery capture flow, multi-page
 - [x] Confidence heuristic, offers the stronger model when a page reads thin
 - [ ] Server vision fallback for handwriting / diagrams / math (Groq vision), charged in credits
@@ -112,8 +114,8 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Note editor (`note/[id]`)
 - [x] Search (`search`)
 - [x] Reminder settings (`settings/reminders`)
-- [ ] Onboarding carousel
-- [ ] Error boundary screen
+- [x] Onboarding carousel
+- [x] Error boundary screen
 
 ## 6. Study features
 
@@ -161,8 +163,8 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 
 - [ ] Haptics on key interactions
 - [ ] Generation loading states (skeletons, not spinners)
-- [ ] Offline handling + retry
-- [ ] Error boundaries
+- [x] Offline handling via a persisted query cache
+- [x] Error boundaries
 - [ ] Sentry or equivalent
 - [ ] Analytics on the funnel: install → first deck → second session → paywall → purchase
 

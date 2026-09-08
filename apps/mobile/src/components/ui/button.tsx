@@ -8,7 +8,7 @@ import { Text } from "./text";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive" | "inverse";
 export type ButtonSize = "md" | "lg";
 
 /**
@@ -21,6 +21,8 @@ const CONTAINER: Record<ButtonVariant, string> = {
   secondary: "border-[1.5px] border-ink bg-transparent",
   ghost: "bg-transparent",
   destructive: "border-[1.5px] border-danger bg-transparent",
+  /** For use on a deck-coloured ground, where `secondary` would be unreadable. */
+  inverse: "border-[1.5px] border-ink-inverse bg-transparent",
 };
 
 const LABEL: Record<ButtonVariant, string> = {
@@ -28,6 +30,7 @@ const LABEL: Record<ButtonVariant, string> = {
   secondary: "text-ink",
   ghost: "text-ink",
   destructive: "text-danger",
+  inverse: "text-ink-inverse",
 };
 
 const ICON_COLOR: Record<ButtonVariant, string> = {
@@ -35,6 +38,7 @@ const ICON_COLOR: Record<ButtonVariant, string> = {
   secondary: raw.ink,
   ghost: raw.ink,
   destructive: raw.danger,
+  inverse: "#FFFFFF",
 };
 
 const SIZE: Record<ButtonSize, string> = {
