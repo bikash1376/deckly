@@ -1,9 +1,6 @@
-import { useCallback } from "react";
-import { Pressable, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Pressable, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
-  LinearTransition,
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -13,21 +10,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Cards, NotePencil, Lightning, User, type Icon as PhosphorIcon } from "phosphor-react-native";
-import { cn } from "@/lib/cn";
 import { raw, shadow } from "@/theme";
-import { Text } from "./ui/text";
 
 /**
- * Floating pill navigation, matching the reference screens.
+ * Floating pill navigation.
  *
- * The active tab does three things at once: it expands to reveal its label, its
- * pill fills with ink, and the icon crosses from `regular` to `fill`. Phosphor's
- * weight axis is what makes that last one free, and it is why this app does not
- * use Lucide: there is no second icon set to keep in sync.
+ * The active state is a single pill that SLIDES between tabs. Every tab is the
+ * same width and nothing about the layout changes when the selection does, so
+ * the three tabs you did not touch stay exactly where they were.
  *
- * Width is animated with `LinearTransition` on the laid out tabs rather than an
- * absolutely positioned indicator driven by `onLayout`. Same motion, and it
- * cannot drift out of sync when a label's width changes.
+ * The earlier version grew the active tab to fit a label. That animated layout
+ * rather than a transform, so selecting one tab shoved its neighbours sideways,
+ * and the growth itself read as a pop. Sliding a transform costs the siblings
+ * nothing and reads as one object moving, which is what a selection is.
+ *
+ * Labels are gone with it. At four tabs across a pill bar there is not room for
+ * a label without either shrinking the touch target or reintroducing the width
+ * change. The icons carry it, and every tab still announces its name to a
+ * screen reader.
  */
 
 const ICONS: Record<string, { icon: PhosphorIcon; label: string }> = {
@@ -37,25 +37,35 @@ const ICONS: Record<string, { icon: PhosphorIcon; label: string }> = {
   profile: { icon: User, label: "You" },
 };
 
-const SPRING = { damping: 20, stiffness: 240, mass: 0.7 } as const;
+/** Enough damping to settle without a visible bounce. */
+const SPRING = { damping: 18, stiffness: 220, mass: 0.7 } as const;
+
+const BAR_HEIGHT = 62;
+const PILL_HEIGHT = 46;
+const BAR_PADDING = 8;
 
 function Tab({
   routeKey,
   focused,
   onPress,
-  onLongPress,
   badge,
 }: {
   routeKey: string;
   focused: boolean;
   onPress: () => void;
-  onLongPress?: () => void;
   badge?: number;
 }) {
   const entry = ICONS[routeKey];
-  const press = useSharedValue(1);
+  const active = useSharedValue(focused ? 1 : 0);
 
-  const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: press.value }] }));
+  useEffect(() => {
+    active.value = withTiming(focused ? 1 : 0, { duration: 180 });
+  }, [focused, active]);
+
+  // Two icons stacked and crossfaded, because Phosphor's weights are different
+  // shapes: there is no single glyph to tween between regular and fill.
+  const restingStyle = useAnimatedStyle(() => ({ opacity: 1 - active.value }));
+  const activeStyle = useAnimatedStyle(() => ({ opacity: active.value }));
 
   if (!entry) return null;
   const { icon: IconComponent, label } = entry;
@@ -66,41 +76,22 @@ function Tab({
       accessibilityState={{ selected: focused }}
       accessibilityLabel={label}
       onPress={onPress}
-      onLongPress={onLongPress}
-      onPressIn={() => {
-        press.value = withSpring(0.9, SPRING);
-      }}
-      onPressOut={() => {
-        press.value = withSpring(1, SPRING);
-      }}
+      className="flex-1 items-center justify-center"
+      style={{ height: PILL_HEIGHT }}
     >
-      <Animated.View
-        layout={LinearTransition.springify().damping(20).stiffness(240)}
-        style={pressStyle}
-        className={cn(
-          "h-11 flex-row items-center gap-[7px] rounded-pill",
-          focused ? "bg-ink px-[17px]" : "px-3.5",
-        )}
-      >
-        <View>
-          <IconComponent
-            size={22}
-            color={focused ? "#FFFFFF" : raw.inkFaint}
-            weight={focused ? "fill" : "regular"}
-          />
-          {badge && badge > 0 && !focused ? (
-            <View className="absolute -right-1 -top-0.5 h-2 w-2 rounded-pill bg-clay" />
-          ) : null}
-        </View>
+      <View>
+        <Animated.View style={restingStyle}>
+          <IconComponent size={23} color={raw.inkFaint} weight="regular" />
+        </Animated.View>
 
-        {focused ? (
-          <Animated.View entering={FadeIn.duration(140)} exiting={FadeOut.duration(90)}>
-            <Text variant="subheading" className="font-body-sb text-ink-inverse">
-              {label}
-            </Text>
-          </Animated.View>
+        <Animated.View style={activeStyle} className="absolute">
+          <IconComponent size={23} color="#FFFFFF" weight="fill" />
+        </Animated.View>
+
+        {badge && badge > 0 && !focused ? (
+          <View className="absolute -right-1 -top-0.5 h-2 w-2 rounded-pill bg-clay" />
         ) : null}
-      </Animated.View>
+      </View>
     </Pressable>
   );
 }
@@ -112,6 +103,24 @@ export interface TabBarProps extends BottomTabBarProps {
 
 export function TabBar({ state, navigation, dueCount = 0 }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  const [trackWidth, setTrackWidth] = useState(0);
+
+  const count = state.routes.length;
+  const tabWidth = count > 0 ? trackWidth / count : 0;
+  const offset = useSharedValue(0);
+
+  useEffect(() => {
+    if (tabWidth === 0) return;
+    offset.value = withSpring(state.index * tabWidth, SPRING);
+  }, [state.index, tabWidth, offset]);
+
+  const indicatorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: offset.value }],
+  }));
+
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    setTrackWidth(event.nativeEvent.layout.width);
+  }, []);
 
   const go = useCallback(
     (index: number) => {
@@ -133,27 +142,36 @@ export function TabBar({ state, navigation, dueCount = 0 }: TabBarProps) {
 
   return (
     <View
-      // Clears the gesture bar without stacking on top of it. The previous
-      // version added 14pt on top of the inset, which on a gesture navigation
-      // device left a visible band of dead space under the bar.
+      // Clears the gesture bar without stacking on top of it.
       style={{ paddingBottom: insets.bottom > 0 ? insets.bottom : 14 }}
       className="absolute inset-x-0 bottom-0 px-gutter"
       pointerEvents="box-none"
     >
       <View
         accessibilityRole="tablist"
-        style={shadow.floating}
-        className="h-[62px] flex-row items-center justify-around rounded-pill bg-surface px-2"
+        style={[shadow.floating, { height: BAR_HEIGHT, paddingHorizontal: BAR_PADDING }]}
+        className="flex-row items-center rounded-pill bg-surface"
       >
-        {state.routes.map((route, index) => (
-          <Tab
-            key={route.key}
-            routeKey={route.name}
-            focused={state.index === index}
-            onPress={() => go(index)}
-            badge={route.name === "review" ? dueCount : undefined}
-          />
-        ))}
+        <View onLayout={onLayout} className="flex-1 flex-row items-center">
+          {/* Behind the icons, and the only thing that moves. */}
+          {tabWidth > 0 ? (
+            <Animated.View
+              pointerEvents="none"
+              style={[indicatorStyle, { width: tabWidth, height: PILL_HEIGHT }]}
+              className="absolute left-0 rounded-pill bg-ink"
+            />
+          ) : null}
+
+          {state.routes.map((route, index) => (
+            <Tab
+              key={route.key}
+              routeKey={route.name}
+              focused={state.index === index}
+              onPress={() => go(index)}
+              badge={route.name === "review" ? dueCount : undefined}
+            />
+          ))}
+        </View>
       </View>
     </View>
   );
