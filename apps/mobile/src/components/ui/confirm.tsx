@@ -2,21 +2,13 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { Modal, Pressable, View } from "react-native";
-import Animated, {
-  Easing,
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+
 import * as Haptics from "expo-haptics";
 
 import { Text } from "./text";
@@ -80,28 +72,28 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       <Modal
         visible={options !== null}
         transparent
-        animationType="none"
+        // Native fade, not a Reanimated entrance.
+        //
+        // Layout animations inside a React Native Modal re-fire on Android:
+        // the modal mounts, measures, and remounts its content, and every
+        // `entering` prop underneath runs again each time. That is the
+        // repeated pop. The platform's own fade runs once, on the window.
+        animationType="fade"
         statusBarTranslucent
         // The system back button resolves as cancel rather than leaving the
         // promise hanging forever.
         onRequestClose={() => settle(false)}
       >
         <View className="flex-1 items-center justify-center px-8">
-          <Animated.View
-            entering={FadeIn.duration(140)}
-            exiting={FadeOut.duration(120)}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
+            onPress={() => settle(false)}
             className="absolute inset-0 bg-ink/45"
-          >
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Cancel"
-              onPress={() => settle(false)}
-              className="flex-1"
-            />
-          </Animated.View>
+          />
 
           {options ? (
-            <DialogBody>
+            <View style={shadow.floating} className="w-full rounded-sheet bg-surface p-6">
               <Text variant="title">{options.title}</Text>
               {options.body ? (
                 <Text variant="body" className="mt-2 text-ink-muted">
@@ -121,42 +113,11 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                   onPress={() => settle(false)}
                 />
               </View>
-            </DialogBody>
+            </View>
           ) : null}
         </View>
       </Modal>
     </ConfirmContext.Provider>
-  );
-}
-
-/**
- * A calm entrance.
- *
- * The previous version combined `.duration()` with `.springify()`, which are
- * two different animations arguing over the same value: the spring overshoots,
- * the duration clips it, and the result wobbles. This is a short scale from
- * 0.94 with an eased curve, so the dialog appears rather than bounces. A
- * confirmation is not a moment for personality.
- */
-function DialogBody({ children }: { children: ReactNode }) {
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    progress.value = withTiming(1, { duration: 170, easing: Easing.out(Easing.quad) });
-  }, [progress]);
-
-  const style = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [{ scale: 0.94 + progress.value * 0.06 }],
-  }));
-
-  return (
-    <Animated.View
-      style={[style, shadow.floating]}
-      className="w-full rounded-sheet bg-surface p-6"
-    >
-      {children}
-    </Animated.View>
   );
 }
 

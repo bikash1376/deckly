@@ -1,8 +1,6 @@
 import { type ReactNode, useEffect } from "react";
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, {
-  FadeIn,
-  FadeOut,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -76,23 +74,21 @@ export function Sheet({ visible, onClose, title, children, className }: SheetPro
     <Modal
       visible={visible}
       transparent
+      // The platform's slide, for the same reason as the dialog: a Reanimated
+      // entrance inside a Modal replays every time Android remounts the
+      // content. Only the drag below is animated here, and a gesture cannot
+      // replay on mount.
       animationType="slide"
       statusBarTranslucent
       onRequestClose={onClose}
     >
       <View className="flex-1 justify-end">
-        <Animated.View
-          entering={FadeIn.duration(160)}
-          exiting={FadeOut.duration(140)}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          onPress={onClose}
           className="absolute inset-0 bg-ink/40"
-        >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-            onPress={onClose}
-            className="flex-1"
-          />
-        </Animated.View>
+        />
 
         <Animated.View
           style={[sheetStyle, shadow.floating, { paddingBottom: insets.bottom + 20, maxHeight }]}
