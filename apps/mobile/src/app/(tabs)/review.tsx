@@ -19,6 +19,18 @@ import { useReportCard } from "@/features/decks/hooks";
 import { INITIAL_SRS, previewGrades } from "@/lib/srs";
 import { raw, shadow } from "@/theme";
 
+/** The floating tab bar's own pill height plus the padding it sits on. */
+const TAB_BAR_CLEARANCE = 62 + 12;
+
+/**
+ * Height reserved for the grade buttons.
+ *
+ * Two rows of 46pt buttons, each with an interval caption beneath, plus the
+ * gap between them. Fixed rather than measured so the card above keeps the same
+ * height whether the answer is showing or not.
+ */
+const ACTION_AREA_HEIGHT = 148;
+
 const GRADES: { grade: ReviewGrade; label: string }[] = [
   { grade: "again", label: "Again" },
   { grade: "hard", label: "Hard" },
@@ -102,7 +114,15 @@ export default function ReviewScreen() {
   }
 
   return (
-    <View className="flex-1 px-gutter" style={{ paddingTop: insets.top + 12 }}>
+    <View
+      className="flex-1 px-gutter"
+      style={{
+        paddingTop: insets.top + 12,
+        // Clears the floating tab bar: its 62pt pill plus whatever padding it
+        // sits on, plus a gap so the card does not touch it.
+        paddingBottom: TAB_BAR_CLEARANCE + (insets.bottom > 0 ? insets.bottom : 14),
+      }}
+    >
       <View className="flex-row items-center justify-between">
         <Text variant="display">Review</Text>
         {data?.streak ? (
@@ -119,12 +139,13 @@ export default function ReviewScreen() {
         <Text variant="label">{cards.length - index} left</Text>
       </View>
 
+      {/* Takes the space left over after the action area below has had its
+          share, rather than filling the screen and being overlapped by it. */}
       <Pressable
         onPress={() => setRevealed(true)}
         accessibilityRole="button"
         accessibilityLabel={revealed ? "Answer shown" : "Tap to reveal the answer"}
-        className="mt-6 flex-1"
-        style={{ marginBottom: insets.bottom + 96 }}
+        className="mt-5 min-h-0 flex-1"
       >
         <View
           style={shadow.card}
@@ -163,11 +184,10 @@ export default function ReviewScreen() {
         </View>
       </Pressable>
 
-      <View
-        className="absolute inset-x-gutter"
-        style={{ bottom: insets.bottom + 96 }}
-        pointerEvents="box-none"
-      >
+      {/* Fixed height, always present. Reserving the space means revealing the
+          answer does not resize the card underneath it, which on a long answer
+          would make the text jump as you read it. */}
+      <View style={{ height: ACTION_AREA_HEIGHT }} className="justify-end pt-4">
         {revealed ? (
           <Animated.View entering={FadeIn.duration(180)} className="flex-row flex-wrap gap-2.5">
             {GRADES.map((item) => (
@@ -190,7 +210,9 @@ export default function ReviewScreen() {
               </View>
             ))}
           </Animated.View>
-        ) : null}
+        ) : (
+          <Button label="Show answer" onPress={() => setRevealed(true)} />
+        )}
       </View>
     </View>
   );

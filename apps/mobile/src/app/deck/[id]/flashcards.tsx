@@ -26,6 +26,15 @@ import { useGradeCard } from "@/features/review/hooks";
 import { INITIAL_SRS, previewGrades } from "@/lib/srs";
 import { shadow } from "@/theme";
 
+/**
+ * Height reserved for the action area.
+ *
+ * Two rows of 46pt buttons with an interval caption under each. Fixed rather
+ * than measured, so revealing the answer does not resize the card above it and
+ * make the text jump while it is being read.
+ */
+const ACTION_AREA_HEIGHT = 148;
+
 const GRADES: { grade: ReviewGrade; label: string }[] = [
   { grade: "again", label: "Again" },
   { grade: "hard", label: "Hard" },
@@ -126,7 +135,7 @@ export default function FlashcardsScreen() {
         onPress={reveal}
         accessibilityRole="button"
         accessibilityLabel={revealed ? "Answer shown" : "Tap to reveal the answer"}
-        className="mt-7 flex-1"
+        className="mt-7 min-h-0 flex-1"
       >
         <View
           style={shadow.card}
@@ -174,7 +183,10 @@ export default function FlashcardsScreen() {
         </View>
       </Pressable>
 
-      <View style={{ paddingBottom: insets.bottom + 20 }} className="pt-5">
+      <View
+        style={{ height: ACTION_AREA_HEIGHT, marginBottom: insets.bottom + 12 }}
+        className="justify-end pt-4"
+      >
         {revealed ? (
           <Animated.View entering={FadeIn.duration(180)} className="flex-row flex-wrap gap-2.5">
             {GRADES.map((item) => (
