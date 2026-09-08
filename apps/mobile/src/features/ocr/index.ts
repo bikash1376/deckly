@@ -30,7 +30,7 @@ export async function recognise(imageUri: string): Promise<OcrResult> {
   return {
     text,
     blocks: result.blocks.length,
-    shouldOfferFallback: text.length < THIN_TEXT_CHARS || result.blocks <= 1,
+    shouldOfferFallback: text.length < THIN_TEXT_CHARS || result.blocks.length <= 1,
   };
 }
 

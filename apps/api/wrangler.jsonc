@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "deckly-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-01",
+
+  // `nodejs_compat` is required by @neondatabase/serverless and unpdf.
+  "compatibility_flags": ["nodejs_compat"],
+
+  "observability": { "enabled": true },
+
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS",
+      "bucket_name": "deckly-uploads",
+      "preview_bucket_name": "deckly-uploads-preview"
+    }
+  ],
+
+  // Every secret lives in `.dev.vars` locally and in Cloudflare secrets when
+  // deployed. Nothing secret belongs in this file, which is committed:
+  //   DATABASE_URL, CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY,
+  //   AI_GATEWAY_API_KEY, GROQ_API_KEY,
+  //   REVENUECAT_WEBHOOK_SECRET, REVENUECAT_SECRET_KEY
+  "vars": {
+    "ENVIRONMENT": "development",
+    "MODEL_FAST": "llama-3.3-70b-versatile",
+    "MODEL_QUALITY": "llama-3.3-70b-versatile"
+  },
+
+  "env": {
+    "production": {
+      "vars": {
+        "ENVIRONMENT": "production",
+        "MODEL_FAST": "llama-3.3-70b-versatile",
+        "MODEL_QUALITY": "llama-3.3-70b-versatile"
+      },
+      "r2_buckets": [
+        {
+          "binding": "UPLOADS",
+          "bucket_name": "deckly-uploads"
+        }
+      ]
+    }
+  }
+}

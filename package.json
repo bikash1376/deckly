@@ -6,7 +6,8 @@
     "mobile": "pnpm --filter @deckly/mobile",
     "api": "pnpm --filter @deckly/api",
     "db:generate": "pnpm --filter @deckly/api db:generate",
-    "db:migrate": "pnpm --filter @deckly/api db:migrate"
+    "db:migrate": "pnpm --filter @deckly/api db:migrate",
+    "typecheck": "pnpm -r --parallel typecheck"
   },
   "packageManager": "pnpm@11.5.1"
 }

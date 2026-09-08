@@ -44,7 +44,7 @@ export function useGradeCard() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: { cardId: string; grade: ReviewGrade }) =>
+    mutationFn: (input: { cardId: string; cardIndex?: number; grade: ReviewGrade }) =>
       api.post("/review/grade", input, z.object({ dueAt: z.string() })),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: reviewKeys.due() });

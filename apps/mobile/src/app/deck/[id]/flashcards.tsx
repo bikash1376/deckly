@@ -79,7 +79,7 @@ export default function FlashcardsScreen() {
       if (cardRecord) {
         // Fire and forget. A dropped grade costs one review slot, and blocking
         // the next card on a round trip is far worse for a study session.
-        grade.mutate({ cardId: `${cardRecord.id}:${index}`, grade: value });
+        grade.mutate({ cardId: cardRecord.id, cardIndex: index, grade: value });
       }
       if (index + 1 >= cards.length) {
         router.replace(`/deck/${id}`);
