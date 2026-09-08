@@ -2,7 +2,10 @@ import { useMemo, useState } from "react";
 import { FlatList, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ArrowLeft, MagnifyingGlass } from "phosphor-react-native";
+import {
+  ArrowLeftIcon as ArrowLeft,
+  MagnifyingGlassIcon as MagnifyingGlass,
+} from "phosphor-react-native";
 import type { Deck, Note } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

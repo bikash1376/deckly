@@ -4,14 +4,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "@clerk/clerk-expo";
 import {
-  ArrowLeft,
-  Bell,
-  CaretRight,
-  Info,
-  ShieldCheck,
-  FileText,
-  SignOut,
-  Trash,
+  ArrowLeftIcon as ArrowLeft,
+  BellIcon as Bell,
+  CaretRightIcon as CaretRight,
+  InfoIcon as Info,
+  ShieldCheckIcon as ShieldCheck,
+  FileTextIcon as FileText,
+  SignOutIcon as SignOut,
+  TrashIcon as Trash,
 } from "phosphor-react-native";
 
 import { Text } from "@/components/ui/text";

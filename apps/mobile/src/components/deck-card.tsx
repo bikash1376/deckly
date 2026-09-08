@@ -1,5 +1,8 @@
 import { View } from "react-native";
-import { ArrowUpRight, Lock } from "phosphor-react-native";
+import {
+  ArrowUpRightIcon as ArrowUpRight,
+  LockIcon as Lock,
+} from "phosphor-react-native";
 import { cn } from "@/lib/cn";
 import { colorForId, deckClass, shadow, type DeckColorKey } from "@/theme";
 import { Text } from "./ui/text";

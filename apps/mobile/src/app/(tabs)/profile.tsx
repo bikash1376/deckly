@@ -2,7 +2,11 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
-import { DotsThree, Fire, Sparkle } from "phosphor-react-native";
+import {
+  DotsThreeIcon as DotsThree,
+  FireIcon as Fire,
+  SparkleIcon as Sparkle,
+} from "phosphor-react-native";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

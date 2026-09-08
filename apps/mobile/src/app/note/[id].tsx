@@ -3,7 +3,12 @@ import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { ArrowLeft, TextAa, MagnifyingGlass, X } from "phosphor-react-native";
+import {
+  ArrowLeftIcon as ArrowLeft,
+  TextAaIcon as TextAa,
+  MagnifyingGlassIcon as MagnifyingGlass,
+  XIcon as X,
+} from "phosphor-react-native";
 import type { GrammarIssue } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

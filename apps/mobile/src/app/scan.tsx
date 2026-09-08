@@ -3,7 +3,12 @@ import { Image, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, Images, X, Sparkle } from "phosphor-react-native";
+import {
+  CameraIcon as Camera,
+  ImagesIcon as Images,
+  XIcon as X,
+  SparkleIcon as Sparkle,
+} from "phosphor-react-native";
 import { CREDIT_COST } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

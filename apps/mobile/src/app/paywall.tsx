@@ -3,7 +3,10 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import type { PurchasesPackage } from "react-native-purchases";
-import { Check, X } from "phosphor-react-native";
+import {
+  CheckIcon as Check,
+  XIcon as X,
+} from "phosphor-react-native";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

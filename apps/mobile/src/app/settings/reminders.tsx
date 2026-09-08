@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Check } from "phosphor-react-native";
+import {
+  ArrowLeftIcon as ArrowLeft,
+  CheckIcon as Check,
+} from "phosphor-react-native";
 
 import { Text } from "@/components/ui/text";
 import { Card } from "@/components/ui/card";

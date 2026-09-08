@@ -2,7 +2,12 @@ import { useCallback, useMemo, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Fire, MagnifyingGlass, Plus, Cards } from "phosphor-react-native";
+import {
+  FireIcon as Fire,
+  MagnifyingGlassIcon as MagnifyingGlass,
+  PlusIcon as Plus,
+  CardsIcon as Cards,
+} from "phosphor-react-native";
 import type { Deck } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

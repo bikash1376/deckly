@@ -2,7 +2,10 @@ import { Linking, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Constants from "expo-constants";
-import { ArrowLeft, Cards } from "phosphor-react-native";
+import {
+  ArrowLeftIcon as ArrowLeft,
+  CardsIcon as Cards,
+} from "phosphor-react-native";
 
 import { Text } from "@/components/ui/text";
 import { Card } from "@/components/ui/card";

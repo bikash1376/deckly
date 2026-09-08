@@ -6,12 +6,12 @@ import { useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as SecureStore from "expo-secure-store";
 import {
-  FilePdf,
-  Camera,
-  TextAa,
-  Cards,
-  Lightning,
-  ChatCircle,
+  FilePdfIcon as FilePdf,
+  CameraIcon as Camera,
+  TextAaIcon as TextAa,
+  CardsIcon as Cards,
+  LightningIcon as Lightning,
+  ChatCircleIcon as ChatCircle,
   type Icon as PhosphorIcon,
 } from "phosphor-react-native";
 

@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, Switch, View } from "react-native";
-import { Cards } from "phosphor-react-native";
+import {
+  CardsIcon as Cards,
+} from "phosphor-react-native";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetRow } from "@/components/ui/sheet";

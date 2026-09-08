@@ -5,7 +5,10 @@ import { Redirect, useRouter } from "expo-router";
 import { useAuth, useSSO } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
-import { Cards, GoogleLogo } from "phosphor-react-native";
+import {
+  CardsIcon as Cards,
+  GoogleLogoIcon as GoogleLogo,
+} from "phosphor-react-native";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

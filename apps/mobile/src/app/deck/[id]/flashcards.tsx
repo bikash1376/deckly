@@ -4,7 +4,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { X, Flag, DotsThreeVertical, Cards as CardsIcon } from "phosphor-react-native";
+import {
+  XIcon as X,
+  FlagIcon as Flag,
+  DotsThreeVerticalIcon as DotsThreeVertical,
+  CardsIcon,
+} from "phosphor-react-native";
 import { Flashcards as FlashcardsSchema, type ReviewGrade } from "@retenit/shared";
 
 import { FlipCard } from "@/components/flip-card";

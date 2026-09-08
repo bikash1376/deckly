@@ -3,7 +3,11 @@ import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
-import { ArrowLeft, Plus, Trash } from "phosphor-react-native";
+import {
+  ArrowLeftIcon as ArrowLeft,
+  PlusIcon as Plus,
+  TrashIcon as Trash,
+} from "phosphor-react-native";
 import { Flashcards as FlashcardsSchema } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

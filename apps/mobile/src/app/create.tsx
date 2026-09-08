@@ -4,7 +4,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import { X, FilePdf, Camera, Sparkle, PencilSimple } from "phosphor-react-native";
+import {
+  XIcon as X,
+  FilePdfIcon as FilePdf,
+  CameraIcon as Camera,
+  SparkleIcon as Sparkle,
+  PencilSimpleIcon as PencilSimple,
+} from "phosphor-react-native";
 import { CREDIT_COST, type SourceKind } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

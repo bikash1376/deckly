@@ -4,7 +4,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { X, Check, Flag, Cards as CardsIcon } from "phosphor-react-native";
+import {
+  XIcon as X,
+  CheckIcon as Check,
+  FlagIcon as Flag,
+  CardsIcon,
+} from "phosphor-react-native";
 import { Quiz as QuizSchema } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

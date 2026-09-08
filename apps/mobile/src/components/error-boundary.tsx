@@ -1,6 +1,8 @@
 import { View } from "react-native";
 import { useRouter } from "expo-router";
-import { Warning } from "phosphor-react-native";
+import {
+  WarningIcon as Warning,
+} from "phosphor-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "./ui/text";

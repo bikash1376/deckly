@@ -1,7 +1,11 @@
 import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { NotePencil, Plus, Lock } from "phosphor-react-native";
+import {
+  NotePencilIcon as NotePencil,
+  PlusIcon as Plus,
+  LockIcon as Lock,
+} from "phosphor-react-native";
 import type { Note } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

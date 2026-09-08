@@ -8,7 +8,9 @@ import Animated, {
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
-import { Trash } from "phosphor-react-native";
+import {
+  TrashIcon as Trash,
+} from "phosphor-react-native";
 
 import { Text } from "./text";
 import { useConfirm } from "./confirm";

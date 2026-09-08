@@ -3,13 +3,13 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  ArrowLeft,
-  CaretRight,
-  ChatCircle,
-  Flag,
-  Sparkle,
-  Trash,
-  Cards as CardsIcon,
+  ArrowLeftIcon as ArrowLeft,
+  CaretRightIcon as CaretRight,
+  ChatCircleIcon as ChatCircle,
+  FlagIcon as Flag,
+  SparkleIcon as Sparkle,
+  TrashIcon as Trash,
+  CardsIcon,
 } from "phosphor-react-native";
 import {
   CREDIT_COST,

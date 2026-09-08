@@ -4,7 +4,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
-import { ArrowLeft, PaperPlaneRight } from "phosphor-react-native";
+import {
+  ArrowLeftIcon as ArrowLeft,
+  PaperPlaneRightIcon as PaperPlaneRight,
+} from "phosphor-react-native";
 import { CREDIT_COST } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";

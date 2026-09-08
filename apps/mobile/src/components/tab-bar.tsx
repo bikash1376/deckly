@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -11,7 +9,13 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Cards, NotePencil, Lightning, User, type Icon as PhosphorIcon } from "phosphor-react-native";
+import {
+  CardsIcon as Cards,
+  NotePencilIcon as NotePencil,
+  LightningIcon as Lightning,
+  UserIcon as User,
+  type Icon as PhosphorIcon,
+} from "phosphor-react-native";
 import { raw, shadow } from "@/theme";
 import { Text } from "./ui/text";
 
@@ -49,7 +53,16 @@ const SPRING = { damping: 18, stiffness: 220, mass: 0.7 } as const;
 
 const BAR_HEIGHT = 62;
 const PILL_HEIGHT = 46;
-const BAR_PADDING = 8;
+
+/**
+ * Derived, not chosen.
+ *
+ * The pill is centred in the bar, so it clears the top and bottom by half the
+ * leftover height. Setting the horizontal inset to the same number makes the
+ * gap beside the outermost pill match the gap above it, and keeps them matched
+ * if either height ever changes.
+ */
+const BAR_PADDING = (BAR_HEIGHT - PILL_HEIGHT) / 2;
 
 /** The breathing room inside the pill, identical on every tab. */
 const TAB_PADDING = 12;
@@ -189,12 +202,10 @@ export function TabBar({ state, navigation, dueCount = 0 }: TabBarProps) {
         style={[shadow.floating, { height: BAR_HEIGHT, paddingHorizontal: BAR_PADDING }]}
         className="flex-row items-center rounded-pill bg-surface"
       >
-        {/* Evenly, not between. `justify-between` pins the first and last tabs
-            to the track edges, so the active pill on "You" ended up hard
-            against the right of the bar with only the 8pt bar padding beside
-            it, and "Decks" had the same problem on the left. Even spacing puts
-            a real gap at both ends. */}
-        <View className="flex-1 flex-row items-center justify-evenly">
+        {/* Between, so the outermost pills sit exactly BAR_PADDING from the
+            bar's edges: the same distance they sit from its top. Even spacing
+            pushed them further in than that and broke the symmetry. */}
+        <View className="flex-1 flex-row items-center justify-between">
           {/* Behind the icons, and the only thing that moves. */}
           {target ? (
             <Animated.View

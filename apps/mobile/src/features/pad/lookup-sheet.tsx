@@ -4,10 +4,10 @@ import type { WebView as WebViewType, WebViewNavigation } from "react-native-web
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn } from "react-native-reanimated";
 import {
-  ArrowClockwise,
-  ArrowLeft,
-  ArrowSquareOut,
-  X,
+  ArrowClockwiseIcon as ArrowClockwise,
+  ArrowLeftIcon as ArrowLeft,
+  ArrowSquareOutIcon as ArrowSquareOut,
+  XIcon as X,
 } from "phosphor-react-native";
 
 import { Text } from "@/components/ui/text";
