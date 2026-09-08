@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Deckly",
+    "slug": "deckly",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "deckly",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#EDECEA",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.deckly.mobile"
+    },
+    "android": {
+      "package": "app.deckly.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#EDECEA",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "edgeToEdgeEnabled": true
+    },
+    "web": { "output": "static", "favicon": "./assets/images/favicon.png" },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#EDECEA",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 96
+        }
+      ],
+      [
+        "expo-document-picker",
+        { "iCloudContainerEnvironment": "Production" }
+      ],
+      [
+        "expo-notifications",
+        { "color": "#935B5D" }
+      ]
+    ],
+    "experiments": { "typedRoutes": true, "reactCompiler": true },
+    "extra": {
+      "eas": { "projectId": "00000000-0000-0000-0000-000000000000" }
+    }
+  }
+}
