@@ -10,6 +10,7 @@ import {
 } from "@deckly/shared";
 import { createDb, decks, cards, reviews, uploadTickets, quizAttempts } from "@/db";
 import { debit, refund } from "@/lib/credits";
+import { assertWithinRateLimit } from "@/lib/rate-limit";
 import { errors } from "@/lib/errors";
 import { generateSeed, generateCard, answerQuestion } from "@/ai/generate";
 import { extractPdf } from "@/ai/pdf";
@@ -98,6 +99,7 @@ route.post("/", async (c) => {
 
   // Debit first, refund on failure. The other order lets a client cancel
   // mid-request and keep the output for free.
+  await assertWithinRateLimit(db, userId);
   await debit(db, userId, "seed", { sourceKind: input.sourceKind });
 
   let seed;
@@ -233,6 +235,7 @@ route.post("/:id/cards", async (c) => {
     });
   }
 
+  await assertWithinRateLimit(db, userId);
   await debit(db, userId, kind, { deckId });
 
   let generated;
@@ -303,6 +306,7 @@ route.post("/:id/chat", async (c) => {
   const deck = rows[0];
   if (!deck) throw errors.notFound("That deck");
 
+  await assertWithinRateLimit(db, userId);
   await debit(db, userId, "deck_chat", { deckId });
 
   let reply: string;

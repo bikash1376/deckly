@@ -3,6 +3,7 @@ import { and, desc, eq, count } from "drizzle-orm";
 import { cleanDeep, DECK_COLORS, type DeckColor } from "@deckly/shared";
 import { createDb, notes, decks } from "@/db";
 import { debit, refund, getBalance } from "@/lib/credits";
+import { assertWithinRateLimit } from "@/lib/rate-limit";
 import { errors } from "@/lib/errors";
 import { checkGrammar, enhanceText, generateSeed } from "@/ai/generate";
 import type { AppEnv } from "@/env";
@@ -123,6 +124,7 @@ route.post("/grammar", async (c) => {
   const text = body?.text?.trim();
   if (!text || text.length < 8) throw errors.invalid("Select a bit more text to check.");
 
+  await assertWithinRateLimit(db, userId);
   await debit(db, userId, "grammar");
 
   try {
@@ -150,6 +152,7 @@ route.post("/enhance", async (c) => {
   const text = body?.text?.trim();
   if (!text || text.length < 8) throw errors.invalid("Select a bit more text to rewrite.");
 
+  await assertWithinRateLimit(db, userId);
   await debit(db, userId, "enhance");
 
   try {
@@ -177,6 +180,7 @@ route.post("/:id/deck", async (c) => {
     throw errors.invalid("There is not enough written yet to make a deck from.");
   }
 
+  await assertWithinRateLimit(db, userId);
   await debit(db, userId, "seed", { fromNote: note.id });
 
   let seed;

@@ -71,8 +71,8 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [ ] Credit ledger — server is the only source of truth
 - [ ] R2 bucket + presigned upload for PDFs and images
 - [x] Quiz attempts recorded, weak topics aggregated across every attempt
-- [ ] Rate limiting per user
-- [ ] Error taxonomy + structured logging
+- [x] Rate limiting per user, counted off the ledger
+- [x] Error taxonomy with app-actionable codes
 
 ## 4. AI generation
 
@@ -156,13 +156,13 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] **In-app Report affordance** on generated cards, flashcards and quiz questions
 - [ ] App icon, adaptive icon, feature graphic, screenshots
 - [ ] Store listing copy + ASO title: `Deckly — AI Study Decks`
-- [ ] EAS build profiles (dev / preview / production AAB)
+- [x] EAS build profiles (dev / preview / production AAB)
 - [ ] Target API level check
 
 ## 10. Polish
 
-- [ ] Haptics on key interactions
-- [ ] Generation loading states (skeletons, not spinners)
+- [x] Haptics on key interactions
+- [x] Generation loading states (skeletons, not spinners)
 - [x] Offline handling via a persisted query cache
 - [x] Error boundaries
 - [ ] Sentry or equivalent
