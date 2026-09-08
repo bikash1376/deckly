@@ -93,3 +93,41 @@ export const CreateManualDeckInput = z.object({
   subject: z.string().min(1).max(40),
 });
 export type CreateManualDeckInput = z.infer<typeof CreateManualDeckInput>;
+
+/**
+ * Hand written cards, with the generation minimums relaxed.
+ *
+ * The AI schemas floor flashcards at five and quiz questions at three, which is
+ * right when a model is producing them: two flashcards from a whole chapter
+ * means the generation went wrong. It is exactly wrong for someone typing in
+ * the three cards they need tonight, who would just be told "could not save".
+ */
+export const ManualFlashcards = z.object({
+  cards: z
+    .array(
+      z.object({
+        front: z.string().min(1).max(400),
+        back: z.string().min(1).max(1000),
+        hint: z.string().nullable(),
+      }),
+    )
+    .min(1)
+    .max(200),
+});
+export type ManualFlashcards = z.infer<typeof ManualFlashcards>;
+
+export const ManualQuiz = z.object({
+  questions: z
+    .array(
+      z.object({
+        question: z.string().min(1).max(500),
+        options: z.array(z.string().min(1).max(300)).length(4),
+        correctIndex: z.number().int().min(0).max(3),
+        explanation: z.string().min(1).max(1000),
+        concept: z.string().min(1).max(200),
+      }),
+    )
+    .min(1)
+    .max(100),
+});
+export type ManualQuiz = z.infer<typeof ManualQuiz>;

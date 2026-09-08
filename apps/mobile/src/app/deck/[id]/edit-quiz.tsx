@@ -105,9 +105,9 @@ export default function EditQuizScreen() {
         concept: d.concept.trim() || d.question.trim().slice(0, 40),
       }));
 
-    if (questions.length < 3) {
+    if (questions.length === 0) {
       setError(
-        "A quiz needs at least three complete questions: all four options filled in, and a reason for the right answer.",
+        "Finish at least one question: all four options filled in, and a reason for the right answer.",
       );
       return;
     }

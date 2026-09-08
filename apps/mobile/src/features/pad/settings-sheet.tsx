@@ -31,7 +31,9 @@ export function PadSettingsSheet({
 
   return (
     <Sheet visible={visible} onClose={onClose} title="Writing">
-      <ScrollView showsVerticalScrollIndicator={false} className="max-h-[520px]">
+      {/* No fixed height. The parent sheet caps itself against the window,
+          so shrinking to fit here is what lets this actually scroll. */}
+      <ScrollView showsVerticalScrollIndicator={false} className="shrink">
         <SheetRow label="Typeface">
           <View className="gap-2">
             {FONT_FAMILIES.map((family) => {

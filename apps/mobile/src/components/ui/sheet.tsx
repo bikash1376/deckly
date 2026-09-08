@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Modal, Pressable, View } from "react-native";
+import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "@/lib/cn";
@@ -25,6 +25,12 @@ export interface SheetProps {
 
 export function Sheet({ visible, onClose, title, children, className }: SheetProps) {
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+
+  // Capped against the real window rather than a fixed pixel height. A hard
+  // coded cap taller than a small phone's screen pushes the sheet's own
+  // scroll area off the bottom, which reads as "it will not scroll".
+  const maxHeight = height * 0.85;
 
   return (
     <Modal
@@ -51,7 +57,7 @@ export function Sheet({ visible, onClose, title, children, className }: SheetPro
         <Animated.View
           entering={SlideInDown.duration(240)}
           exiting={SlideOutDown.duration(180)}
-          style={[shadow.floating, { paddingBottom: insets.bottom + 20 }]}
+          style={[shadow.floating, { paddingBottom: insets.bottom + 20, maxHeight }]}
           className={cn("rounded-t-sheet bg-bg px-gutter pt-3", className)}
         >
           <View className="mb-4 h-1 w-9 self-center rounded-pill bg-hairline" />

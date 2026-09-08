@@ -40,10 +40,19 @@ export const KeyConcepts = z.object({
       // present, so absence is expressed as null rather than omission.
       whyItMatters: z.string().nullable(),
     }),
-  ).min(3).max(20),
+  ).min(1).max(20),
 });
 export type KeyConcepts = z.infer<typeof KeyConcepts>;
 
+/**
+ * Minimums are one, not five.
+ *
+ * A schema says what is valid, not what is wanted. Flooring these at five meant
+ * a short source produced three perfectly good cards, failed validation, and
+ * surfaced as "generation failed": a hard error where the honest answer was
+ * three cards. The prompts ask for a useful number, which is the right place
+ * for a preference.
+ */
 export const Flashcards = z.object({
   cards: z.array(
     z.object({
@@ -51,7 +60,7 @@ export const Flashcards = z.object({
       back: z.string().describe("Answer in under 25 words"),
       hint: z.string().nullable(),
     }),
-  ).min(5).max(40),
+  ).min(1).max(40),
 });
 export type Flashcards = z.infer<typeof Flashcards>;
 
@@ -65,7 +74,7 @@ export const Quiz = z.object({
       explanation: z.string(),
       concept: z.string().describe("Which key concept this tests, for weak-topic tracking"),
     }),
-  ).min(3).max(20),
+  ).min(1).max(20),
 });
 export type Quiz = z.infer<typeof Quiz>;
 
@@ -92,6 +101,6 @@ export const ExamQuestions = z.object({
       marks: z.number().int().min(1).max(20),
       modelAnswer: z.string(),
     }),
-  ).min(3).max(10),
+  ).min(1).max(10),
 });
 export type ExamQuestions = z.infer<typeof ExamQuestions>;

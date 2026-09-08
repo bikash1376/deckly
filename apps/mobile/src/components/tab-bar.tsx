@@ -133,9 +133,10 @@ export function TabBar({ state, navigation, dueCount = 0 }: TabBarProps) {
 
   return (
     <View
-      // Sits above the gesture bar without hugging it. On a device with no
-      // inset this still clears the screen edge by a full gutter.
-      style={{ paddingBottom: Math.max(insets.bottom, 12) + 14 }}
+      // Clears the gesture bar without stacking on top of it. The previous
+      // version added 14pt on top of the inset, which on a gesture navigation
+      // device left a visible band of dead space under the bar.
+      style={{ paddingBottom: insets.bottom > 0 ? insets.bottom : 14 }}
       className="absolute inset-x-0 bottom-0 px-gutter"
       pointerEvents="box-none"
     >

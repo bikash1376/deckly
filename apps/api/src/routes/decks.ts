@@ -3,7 +3,8 @@ import { and, desc, eq, sql, count } from "drizzle-orm";
 import {
   CreateDeckInput,
   CreateManualDeckInput,
-  Quiz as QuizSchema,
+  ManualFlashcards,
+  ManualQuiz,
   CardKind,
   cleanDeep,
   Flashcards as FlashcardsSchema,
@@ -278,7 +279,7 @@ route.put("/:id/flashcards", async (c) => {
   const userId = c.get("userId");
   const deckId = c.req.param("id");
 
-  const parsed = FlashcardsSchema.safeParse(await c.req.json().catch(() => null));
+  const parsed = ManualFlashcards.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) throw errors.invalid("Every card needs a question and an answer.");
 
   const owned = await db
@@ -366,7 +367,7 @@ route.put("/:id/quiz", async (c) => {
   const userId = c.get("userId");
   const deckId = c.req.param("id");
 
-  const parsed = QuizSchema.safeParse(await c.req.json().catch(() => null));
+  const parsed = ManualQuiz.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) {
     throw errors.invalid("Every question needs four options and one marked correct.");
   }

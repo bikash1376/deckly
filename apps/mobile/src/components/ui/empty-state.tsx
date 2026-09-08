@@ -33,8 +33,15 @@ export function EmptyState({
         {body}
       </Text>
 
+      {/* self-center is required: block={false} sets self-start, which beats
+          the parent's items-center and shoves the button to the left edge. */}
       {actionLabel && onAction ? (
-        <Button label={actionLabel} onPress={onAction} block={false} className="mt-6" />
+        <Button
+          label={actionLabel}
+          onPress={onAction}
+          block={false}
+          className="mt-6 self-center"
+        />
       ) : null}
     </View>
   );
