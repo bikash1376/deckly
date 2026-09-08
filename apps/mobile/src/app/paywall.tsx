@@ -66,7 +66,8 @@ export default function PaywallScreen() {
           {usedFree ? "You have used\nyour free credits." : "More room\nto study."}
         </Text>
         <Text variant="bodyLarge" className="mt-3 text-ink-muted">
-          Reviewing stays free forever. Premium is for making new material.
+          Reviewing stays free forever, and so does writing your own cards.
+          Premium is for having them made for you.
         </Text>
 
         <View className="mt-6 gap-2.5">
@@ -76,9 +77,17 @@ export default function PaywallScreen() {
               <Skeleton className="h-[84px] rounded-card" />
             </>
           ) : packages.length === 0 ? (
-            <View className="rounded-card border-[1.5px] border-hairline bg-surface p-4">
+            /* Plans come from Google Play through RevenueCat, so they cannot
+               exist until there is a Play listing with products in it. Say that
+               plainly rather than showing a bare error: on a development build
+               this is the expected state, not a fault. */
+            <View className="rounded-card border-[1.5px] border-dashed border-hairline bg-surface p-4">
+              <Text variant="subheading" className="mb-1">
+                Plans are not live yet
+              </Text>
               <Text variant="body" className="text-ink-muted">
-                {loadError ?? "No plans are available right now."}
+                {loadError ??
+                  "Subscriptions appear here once the app is set up for payments in Google Play."}
               </Text>
             </View>
           ) : (
@@ -135,7 +144,13 @@ export default function PaywallScreen() {
 
       <View className="px-gutter" style={{ paddingBottom: insets.bottom + 20 }}>
         <Button
-          label={selected?.packageType === "ANNUAL" ? "Start yearly" : "Start monthly"}
+          label={
+            !selected
+              ? "Not available yet"
+              : selected.packageType === "ANNUAL"
+                ? "Start yearly"
+                : "Start monthly"
+          }
           loading={busy}
           disabled={!selected}
           onPress={async () => {
