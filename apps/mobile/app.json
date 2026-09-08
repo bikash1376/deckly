@@ -17,7 +17,10 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -57,9 +60,11 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
+    "owner": "bksh01",
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "00000000-0000-0000-0000-000000000000"
+        "projectId": "4ed6a789-ae39-4de2-b43c-6292eed8362b"
       }
     }
   }
