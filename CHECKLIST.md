@@ -64,25 +64,25 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 
 ## 3. Backend — Worker API
 
-- [ ] Hono app on Cloudflare Workers + `wrangler.jsonc`
-- [ ] Clerk JWT verification middleware (`@clerk/backend`)
-- [ ] Neon + Drizzle schema: `users`, `decks`, `cards`, `notes`, `reviews`, `ledger`, `entitlements`
-- [ ] Migrations wired (`drizzle-kit`)
-- [ ] Credit ledger — server is the only source of truth
-- [ ] R2 bucket + presigned upload for PDFs and images
+- [x] Hono app on Cloudflare Workers + `wrangler.jsonc`
+- [x] Clerk JWT verification middleware, verified rejecting anonymous requests
+- [x] Neon + Drizzle schema, 11 tables, exercised end to end
+- [x] Migrations wired and **applied to Neon** (11 tables)
+- [x] Credit ledger, atomic debit verified to refuse when short
+- [x] R2 binding + single-use upload tickets (bucket still needs creating)
 - [x] Quiz attempts recorded, weak topics aggregated across every attempt
 - [x] Rate limiting per user, counted off the ledger
 - [x] Error taxonomy with app-actionable codes
 
 ## 4. AI generation
 
-- [ ] AI SDK client + gateway (Groq primary, one-string model swap)
-- [ ] `POST /decks` → seed generation (title, TL;DR, outline)
-- [ ] Lazy per-card generation: summary, key concepts, flashcards, quiz, cheat sheet, ELI5, exam questions
-- [ ] Streaming responses to the app
-- [ ] PDF text extraction (`unpdf`), page cap + chunk/map-reduce for long docs
-- [ ] "Ask this deck" — chat grounded in the source
-- [ ] Prompt library with a versioned prompt per card kind
+- [x] AI SDK client on Groq, **gpt-oss-20b / gpt-oss-120b** for strict structured outputs
+- [x] `POST /decks` seed generation
+- [x] Lazy per-card generation, all seven kinds
+- [ ] Streaming responses (note: Groq disallows streaming with structured outputs)
+- [x] PDF text extraction with page cap and scanned-PDF detection
+- [x] Ask this deck, grounded in the source
+- [x] Prompt library, versioned per card kind and stored on every row
 
 ## 5. OCR — photo of notes → deck
 
@@ -139,12 +139,12 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 ## 8. Monetization (RevenueCat)
 
 - [x] RevenueCat SDK init, identity linked to the Clerk id
-- [ ] Products: monthly + annual subscription
+- [ ] Products: monthly + annual **only, delete Lifetime** (unbounded AI cost)
 - [x] Paywall screen with offerings, purchase and restore
-- [ ] Webhook → Worker → `entitlements` table
-- [ ] Credit enforcement on every generation endpoint
-- [ ] Free tier: 5 generations/month, 2 notes, unlimited review
-- [ ] Credit meter UI + upgrade prompts at the right moment
+- [x] Webhook handler with constant-time secret comparison
+- [x] Credit enforcement on every generation endpoint
+- [x] Free tier: 60 credits/month, 2 notes, unlimited review
+- [x] Credit meter UI + upgrade prompts at the point of need
 
 ## 9. Play Store readiness
 
@@ -159,13 +159,23 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] EAS build profiles (dev / preview / production AAB)
 - [ ] Target API level check
 
-## 9b. Build verification
+## 9b. Verification, what has actually run
 
 - [x] Worker bundles clean (`wrangler deploy --dry-run`), 1.03 MB gzipped
 - [x] App bundles clean (`expo export --platform android`)
 - [x] Uniwind transform confirmed running (generates `src/uniwind-types.d.ts`)
 - [x] Font bundle trimmed from 18 faces to 5, export 26 MB down to 16 MB
-- [ ] Run on a real device (needs envs + a dev build)
+- [x] **Migrations applied to the real Neon database**, 11 tables
+- [x] **Worker boots**, `/health` returns 200
+- [x] **Worker reaches Neon**, `/health/db` returns 200 in about 1.1s cold
+- [x] Anonymous request to a protected route correctly returns 401
+- [x] **17 schema checks pass** against the real database: enum constraints,
+      unique indexes, the atomic conditional debit refusing when short, the due
+      queue, progress and weak-topic aggregates, and a user delete cascading
+      every child row away
+- [ ] One real AI generation end to end (needs a signed-in user)
+- [ ] Run on a real device (needs a dev build)
+- [ ] Real purchase through Play Billing
 
 ## 10. Polish
 

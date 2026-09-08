@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { eq } from "drizzle-orm";
-import { createDb, reports } from "@/db";
+import { sql } from "drizzle-orm";
+import { createDb, reports, users } from "@/db";
 import { requireAuth } from "@/middleware/auth";
 import { toResponse, errors } from "@/lib/errors";
 import decksRoute from "@/routes/decks";
@@ -34,6 +34,26 @@ app.notFound((c) =>
 );
 
 app.get("/health", (c) => c.json({ ok: true, environment: c.env.ENVIRONMENT }));
+
+/**
+ * Readiness, including the database.
+ *
+ * Separate from /health because it costs a round trip, so an uptime monitor can
+ * poll the cheap one frequently and this one rarely. Returns latency and
+ * nothing else: a health endpoint that leaks row counts or schema names is a
+ * reconnaissance endpoint.
+ */
+app.get("/health/db", async (c) => {
+  const started = Date.now();
+  try {
+    const db = createDb(c.env.DATABASE_URL);
+    await db.select({ ok: sql<number>`1` }).from(users).limit(1);
+    return c.json({ ok: true, latencyMs: Date.now() - started });
+  } catch (error) {
+    console.error("db health failed", String(error));
+    return c.json({ ok: false, latencyMs: Date.now() - started }, 503);
+  }
+});
 
 // Webhooks authenticate with their own shared secret, so they are mounted
 // before the auth middleware rather than inside it.
