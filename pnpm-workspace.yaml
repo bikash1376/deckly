@@ -9,17 +9,18 @@ packages:
 overrides:
   zod: "^3.25.76"
 
-onlyBuiltDependencies:
-  - "@clerk/shared"
-  - core-js
-  - esbuild
-  - workerd
-
+# pnpm 11 requires an explicit decision on every package with an install script,
+# and exits non-zero until it gets one. Expo's CLI treats that exit code as a
+# failed install, which is what broke `eas build`.
+#
+# True only where the script actually produces something we use: esbuild and
+# workerd fetch platform binaries that wrangler and drizzle-kit run. The rest
+# are funding notices or optional native addons with working JS fallbacks.
 allowBuilds:
-  '@clerk/shared': set this to true or false
-  browser-tabs-lock: set this to true or false
-  bufferutil: set this to true or false
-  core-js: set this to true or false
-  esbuild: set this to true or false
-  utf-8-validate: set this to true or false
-  workerd: set this to true or false
+  esbuild: true
+  workerd: true
+  "@clerk/shared": false
+  browser-tabs-lock: false
+  bufferutil: false
+  core-js: false
+  utf-8-validate: false
