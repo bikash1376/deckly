@@ -23,11 +23,26 @@ const PREMIUM_NOTE_LIMIT = 1_000;
  * so it authenticates with the shared secret instead of a Clerk token.
  */
 route.post("/revenuecat", async (c) => {
+  const expected = c.env.REVENUECAT_WEBHOOK_SECRET;
+
+  // Fail closed when the secret has not been set yet. Without this the compare
+  // below reads .length on undefined and throws, which surfaces as a 500: the
+  // request is still rejected, but through a crash rather than a decision, and
+  // a 500 tells a prober that something is broken rather than that they are
+  // simply not allowed.
+  if (!expected) {
+    console.error("REVENUECAT_WEBHOOK_SECRET is not set, rejecting all webhooks");
+    return c.json(
+      { code: "unauthorized", message: "Webhooks are not configured." },
+      401,
+    );
+  }
+
   const authorization = c.req.header("Authorization");
 
   // Constant time compare. A plain !== leaks the secret one byte at a time to
   // anyone patient enough to measure the response.
-  if (!authorization || !timingSafeEqual(authorization, c.env.REVENUECAT_WEBHOOK_SECRET)) {
+  if (!authorization || !timingSafeEqual(authorization, expected)) {
     return c.json({ code: "unauthorized", message: "Bad webhook secret." }, 401);
   }
 

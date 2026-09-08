@@ -12,7 +12,7 @@
         "gradleCommand": ":app:assembleDebug"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://10.0.2.2:8787"
+        "EXPO_PUBLIC_API_URL": "https://retenit-api-production.bikash13763.workers.dev"
       }
     },
     "preview": {
@@ -20,14 +20,20 @@
       "android": {
         "buildType": "apk"
       },
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://retenit-api-production.bikash13763.workers.dev"
+      }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
       },
       "channel": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://retenit-api-production.bikash13763.workers.dev"
+      }
     }
   },
   "submit": {

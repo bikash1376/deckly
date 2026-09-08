@@ -29,6 +29,9 @@
 
   "env": {
     "production": {
+      // Preview URLs would publish this API under extra hostnames. Auth is
+      // enforced regardless, but there is no reason to widen the surface.
+      "preview_urls": false,
       "vars": {
         "ENVIRONMENT": "production",
         "MODEL_FAST": "openai/gpt-oss-20b",
