@@ -112,6 +112,8 @@ export default function DeckScreen() {
 
   const { deck, cards, outline } = data;
   const progress = deck.cardsTotal > 0 ? deck.cardsDone / deck.cardsTotal : 0;
+  /** A deck built by hand has no source text, so nothing can be generated from it. */
+  const hasSource = deck.tldr.trim().length >= 40;
 
   return (
     <ScrollView
@@ -153,17 +155,23 @@ export default function DeckScreen() {
           Ready
         </Text>
 
+        {/* On a hand built deck there is nothing to generate from, so tapping
+            the row opens the editor instead of spending credits. */}
         <StudyRow
           title="Flashcards"
           subtitle={
             generated.has("flashcards")
               ? `${deck.cardsTotal} cards`
-              : `Not made yet, ${CREDIT_COST.flashcards} credits`
+              : hasSource
+                ? `Not made yet, ${CREDIT_COST.flashcards} credits`
+                : "Not written yet, tap to start"
           }
           onPress={
             generated.has("flashcards")
               ? () => router.push(`/deck/${id}/flashcards`)
-              : () => run("flashcards")
+              : hasSource
+                ? () => run("flashcards")
+                : () => router.push(`/deck/${id}/edit-flashcards`)
           }
           busy={pending === "flashcards"}
           onEdit={() => router.push(`/deck/${id}/edit-flashcards`)}
@@ -174,23 +182,32 @@ export default function DeckScreen() {
           subtitle={
             generated.has("quiz")
               ? "Test yourself"
-              : `Not made yet, ${CREDIT_COST.quiz} credits`
+              : hasSource
+                ? `Not made yet, ${CREDIT_COST.quiz} credits`
+                : "Not written yet, tap to start"
           }
           onPress={
             generated.has("quiz")
               ? () => router.push(`/deck/${id}/quiz`)
-              : () => run("quiz")
+              : hasSource
+                ? () => run("quiz")
+                : () => router.push(`/deck/${id}/edit-quiz`)
           }
           busy={pending === "quiz"}
           onEdit={() => router.push(`/deck/${id}/edit-quiz`)}
         />
 
-        <StudyRow
-          title="Ask this deck"
-          subtitle={`Questions about the source, ${CREDIT_COST.deck_chat} credit each`}
-          icon={ChatCircle}
-          onPress={() => router.push(`/deck/${id}/chat`)}
-        />
+        {/* Only meaningful when there is source material behind the deck. A
+            hand built one has none, so the row would charge for an answer
+            drawn from nothing. */}
+        {hasSource ? (
+          <StudyRow
+            title="Ask this deck"
+            subtitle={`Questions about the source, ${CREDIT_COST.deck_chat} credit each`}
+            icon={ChatCircle}
+            onPress={() => router.push(`/deck/${id}/chat`)}
+          />
+        ) : null}
       </View>
 
       {weakTopics && weakTopics.length > 0 ? (
@@ -269,7 +286,7 @@ export default function DeckScreen() {
         </View>
       ) : null}
 
-      {remaining.length > 0 && deck.tldr ? (
+      {remaining.length > 0 && hasSource ? (
         <View className="mt-7 px-gutter">
           <Text variant="overline" className="mb-2.5">
             Generate

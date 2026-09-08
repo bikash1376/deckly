@@ -496,12 +496,19 @@ route.post("/:id/cards", async (c) => {
     });
   }
 
+  const source = deck.sourceText ?? deck.tldr;
+  if (!source || source.trim().length < 40) {
+    throw errors.invalid(
+      "This deck was built by hand, so there is nothing to generate from. Write the cards yourself, or make a new deck from a topic or a PDF.",
+    );
+  }
+
   await assertWithinRateLimit(db, userId);
   await debit(db, userId, kind, { deckId });
 
   let generated;
   try {
-    generated = await generateCard(c.env, kind, deck.sourceText ?? deck.tldr);
+    generated = await generateCard(c.env, kind, source);
   } catch (caught) {
     await refund(db, userId, kind, "generation failed");
     throw caught;
@@ -567,12 +574,21 @@ route.post("/:id/chat", async (c) => {
   const deck = rows[0];
   if (!deck) throw errors.notFound("That deck");
 
+  // A hand built deck has no source material. Answering from nothing would be
+  // a paid hallucination, so refuse before taking the credit.
+  const source = deck.sourceText ?? deck.tldr;
+  if (!source || source.trim().length < 40) {
+    throw errors.invalid(
+      "This deck was built by hand, so there is no source to answer from. Ask about a deck made from a topic, a PDF or your notes.",
+    );
+  }
+
   await assertWithinRateLimit(db, userId);
   await debit(db, userId, "deck_chat", { deckId });
 
   let reply: string;
   try {
-    reply = await answerQuestion(c.env, deck.sourceText ?? deck.tldr, question);
+    reply = await answerQuestion(c.env, source, question);
   } catch (caught) {
     await refund(db, userId, "deck_chat", "generation failed");
     throw caught;
