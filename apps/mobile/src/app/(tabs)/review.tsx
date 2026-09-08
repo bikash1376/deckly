@@ -7,6 +7,7 @@ import * as Haptics from "expo-haptics";
 import { Lightning, Fire, Flag } from "phosphor-react-native";
 import type { ReviewGrade } from "@retenit/shared";
 
+import { FlipCard } from "@/components/flip-card";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -20,16 +21,16 @@ import { INITIAL_SRS, previewGrades } from "@/lib/srs";
 import { raw, shadow } from "@/theme";
 
 /** The floating tab bar's own pill height plus the padding it sits on. */
-const TAB_BAR_CLEARANCE = 62 + 12;
+const TAB_BAR_CLEARANCE = 62 + 10;
 
 /**
  * Height reserved for the grade buttons.
  *
- * Two rows of 46pt buttons, each with an interval caption beneath, plus the
- * gap between them. Fixed rather than measured so the card above keeps the same
- * height whether the answer is showing or not.
+ * Two rows of 46pt buttons each with a caption beneath (66), the gap between
+ * the rows (10), and the space above (12). The previous 148 was six points
+ * short, which clipped the bottom row and stole the difference from the card.
  */
-const ACTION_AREA_HEIGHT = 148;
+const ACTION_AREA_HEIGHT = 12 + 66 + 10 + 66;
 
 const GRADES: { grade: ReviewGrade; label: string }[] = [
   { grade: "again", label: "Again" },
@@ -141,48 +142,61 @@ export default function ReviewScreen() {
 
       {/* Takes the space left over after the action area below has had its
           share, rather than filling the screen and being overlapped by it. */}
-      <Pressable
+      <FlipCard
+        flipped={revealed}
         onPress={() => setRevealed(true)}
-        accessibilityRole="button"
         accessibilityLabel={revealed ? "Answer shown" : "Tap to reveal the answer"}
         className="mt-5 min-h-0 flex-1"
-      >
-        <View
-          style={shadow.card}
-          className="flex-1 justify-between rounded-card bg-surface p-6"
-        >
-          <Chip label={current.deckTitle} tone={current.deckColor} />
-
-          <View>
-            <Text variant="overline" className="mb-3">
-              {revealed ? "Answer" : "Question"}
-            </Text>
-            <Text variant="title">{revealed ? current.back : current.front}</Text>
-            {!revealed && current.hint ? (
-              <Text variant="caption" className="mt-4">
-                {current.hint}
+        front={
+          <View className="flex-1 justify-between p-6">
+            <Chip label={current.deckTitle} tone={current.deckColor} />
+            <View>
+              <Text variant="overline" className="mb-3">
+                Question
               </Text>
-            ) : null}
+              <Text variant="title">{current.front}</Text>
+              {current.hint ? (
+                <Text variant="caption" className="mt-4">
+                  {current.hint}
+                </Text>
+              ) : null}
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text variant="caption">
+                {current.lapses > 2 ? "You have missed this one before" : "Tap to flip"}
+              </Text>
+              <IconButton
+                icon={Flag}
+                tone="bare"
+                size="sm"
+                accessibilityLabel="Report this card"
+                onPress={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
+              />
+            </View>
           </View>
-
-          <View className="flex-row items-center justify-between">
-            <Text variant="caption">
-              {revealed
-                ? "How well did you know it?"
-                : current.lapses > 2
-                  ? "You have missed this one before"
-                  : "Tap to flip"}
-            </Text>
-            <IconButton
-              icon={Flag}
-              tone="bare"
-              size="sm"
-              accessibilityLabel="Report this card"
-              onPress={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
-            />
+        }
+        back={
+          <View className="flex-1 justify-between p-6">
+            <Chip label={current.deckTitle} tone={current.deckColor} />
+            <View>
+              <Text variant="overline" className="mb-3">
+                Answer
+              </Text>
+              <Text variant="title">{current.back}</Text>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text variant="caption">How well did you know it?</Text>
+              <IconButton
+                icon={Flag}
+                tone="bare"
+                size="sm"
+                accessibilityLabel="Report this card"
+                onPress={() => report.mutate({ cardId: current.id, reason: "user_flag" })}
+              />
+            </View>
           </View>
-        </View>
-      </Pressable>
+        }
+      />
 
       {/* Fixed height, always present. Reserving the space means revealing the
           answer does not resize the card underneath it, which on a long answer

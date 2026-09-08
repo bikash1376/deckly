@@ -2,19 +2,12 @@ import { useCallback, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  interpolate,
-  Easing,
-} from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { X, Flag, Cards as CardsIcon } from "phosphor-react-native";
 import { Flashcards as FlashcardsSchema, type ReviewGrade } from "@retenit/shared";
 
+import { FlipCard } from "@/components/flip-card";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -33,7 +26,7 @@ import { shadow } from "@/theme";
  * than measured, so revealing the answer does not resize the card above it and
  * make the text jump while it is being read.
  */
-const ACTION_AREA_HEIGHT = 148;
+const ACTION_AREA_HEIGHT = 12 + 66 + 10 + 66;
 
 const GRADES: { grade: ReviewGrade; label: string }[] = [
   { grade: "again", label: "Again" },
@@ -53,7 +46,6 @@ export default function FlashcardsScreen() {
 
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
-  const flip = useSharedValue(0);
 
   const cardRecord = useMemo(
     () => data?.cards.find((c) => c.kind === "flashcards"),
@@ -69,19 +61,11 @@ export default function FlashcardsScreen() {
   const current = cards[index];
   const intervals = previewGrades(INITIAL_SRS);
 
-  const frontStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(flip.value, [0, 0.5, 1], [1, 0, 0]),
-  }));
-  const backStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(flip.value, [0, 0.5, 1], [0, 0, 1]),
-  }));
-
   const reveal = useCallback(() => {
     if (revealed) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setRevealed(true);
-    flip.value = withTiming(1, { duration: 260, easing: Easing.inOut(Easing.cubic) });
-  }, [revealed, flip]);
+  }, [revealed]);
 
   const answer = useCallback(
     (value: ReviewGrade) => {
@@ -95,10 +79,9 @@ export default function FlashcardsScreen() {
         return;
       }
       setRevealed(false);
-      flip.value = 0;
       setIndex((i) => i + 1);
     },
-    [cardRecord, grade, index, cards.length, router, id, flip],
+    [cardRecord, grade, index, cards.length, router, id],
   );
 
   if (!current) {
@@ -131,57 +114,58 @@ export default function FlashcardsScreen() {
         </Text>
       </View>
 
-      <Pressable
+      <FlipCard
+        flipped={revealed}
         onPress={reveal}
-        accessibilityRole="button"
         accessibilityLabel={revealed ? "Answer shown" : "Tap to reveal the answer"}
         className="mt-7 min-h-0 flex-1"
-      >
-        <View
-          style={shadow.card}
-          className="flex-1 justify-between rounded-card bg-surface p-6"
-        >
-          <Chip label={data?.deck.subject ?? "Card"} tone={data?.deck.color ?? "neutral"} />
-
-          <View>
-            <Animated.View style={frontStyle}>
+        front={
+          <View className="flex-1 justify-between p-6">
+            <Chip label={data?.deck.subject ?? "Card"} tone={data?.deck.color ?? "neutral"} />
+            <View>
               <Text variant="overline" className="mb-3">
                 Question
               </Text>
               <Text variant="title">{current.front}</Text>
-            </Animated.View>
-
-            {revealed ? (
-              <Animated.View
-                style={backStyle}
-                entering={FadeIn.duration(200)}
-                exiting={FadeOut.duration(120)}
-                className="absolute left-0 right-0"
-              >
-                <Text variant="overline" className="mb-3">
-                  Answer
-                </Text>
-                <Text variant="title">{current.back}</Text>
-              </Animated.View>
-            ) : null}
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text variant="caption">{current.hint ?? "Tap to flip"}</Text>
+              <IconButton
+                icon={Flag}
+                tone="bare"
+                size="sm"
+                accessibilityLabel="Report this card"
+                onPress={() =>
+                  cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
+                }
+              />
+            </View>
           </View>
-
-          <View className="flex-row items-center justify-between">
-            <Text variant="caption">
-              {revealed ? "How well did you know it?" : current.hint ?? "Tap to flip"}
-            </Text>
-            <IconButton
-              icon={Flag}
-              tone="bare"
-              size="sm"
-              accessibilityLabel="Report this card"
-              onPress={() =>
-                cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
-              }
-            />
+        }
+        back={
+          <View className="flex-1 justify-between p-6">
+            <Chip label={data?.deck.subject ?? "Card"} tone={data?.deck.color ?? "neutral"} />
+            <View>
+              <Text variant="overline" className="mb-3">
+                Answer
+              </Text>
+              <Text variant="title">{current.back}</Text>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text variant="caption">How well did you know it?</Text>
+              <IconButton
+                icon={Flag}
+                tone="bare"
+                size="sm"
+                accessibilityLabel="Report this card"
+                onPress={() =>
+                  cardRecord && report.mutate({ cardId: cardRecord.id, reason: "user_flag" })
+                }
+              />
+            </View>
           </View>
-        </View>
-      </Pressable>
+        }
+      />
 
       <View
         style={{ height: ACTION_AREA_HEIGHT, marginBottom: insets.bottom + 12 }}
