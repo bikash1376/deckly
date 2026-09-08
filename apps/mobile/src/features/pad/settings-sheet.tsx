@@ -4,7 +4,7 @@ import {
 } from "phosphor-react-native";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetRow, SheetScrollView } from "@/components/ui/sheet";
+import { Sheet, SheetRow } from "@/components/ui/sheet";
 import { cn } from "@/lib/cn";
 import { raw } from "@/theme";
 import {
@@ -41,10 +41,7 @@ export function PadSettingsSheet({
   const grammarAvailable = isGrammarConfigured();
 
   return (
-    <Sheet visible={visible} onClose={onClose} title="Writing">
-      {/* Sheet aware: scrolls while there is content left, then hands the
-          gesture back to the sheet so a pull at the top still dismisses it. */}
-      <SheetScrollView>
+    <Sheet visible={visible} onClose={onClose} title="Writing" scrollable>
         <SheetRow label="Typeface">
           <View className="gap-2">
             {FONT_FAMILIES.map((family) => {
@@ -185,7 +182,6 @@ export function PadSettingsSheet({
             Reset to default
           </Text>
         </Pressable>
-      </SheetScrollView>
     </Sheet>
   );
 }
