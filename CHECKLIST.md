@@ -21,7 +21,9 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] `SPEC.md` — stack, architecture, data model, conventions
 - [x] Push to `bikash1376/retenit`
 - [x] Load Inter / Inter Tight via `expo-font`
-- [ ] Init `react-native-reusables` and pull the primitives
+- [x] ~~Init `react-native-reusables`~~ Not used. Its primitives assume a
+      shadcn-shaped design system; ours is a small token set with distinctive
+      components, so hand building was less work than overriding it.
 - [x] `.env.example` for the app, `.dev.vars.example` for the Worker
 - [ ] Rename project dir to `retenit` (space in path breaks local Gradle builds)
 
@@ -145,7 +147,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Typography settings sheet: 6 typefaces, size, weight, line height, tracking
 - [x] Spell check on device (bundled Hunspell, 542 KB, no server, no key)
 - [x] Optional grammar layer via a LanguageTool endpoint, off by default
-- [ ] Inline grammar issue highlighting + accept/dismiss
+- [x] Inline issue underlines, tap for the fix, accept or dismiss
 - [x] Turn this note into a deck
 - [x] Debounced autosave
 
