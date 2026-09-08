@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -11,6 +13,7 @@ import * as Haptics from "expo-haptics";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Cards, NotePencil, Lightning, User, type Icon as PhosphorIcon } from "phosphor-react-native";
 import { raw, shadow } from "@/theme";
+import { Text } from "./ui/text";
 
 /**
  * Floating pill navigation.
@@ -24,10 +27,10 @@ import { raw, shadow } from "@/theme";
  * and the growth itself read as a pop. Sliding a transform costs the siblings
  * nothing and reads as one object moving, which is what a selection is.
  *
- * Labels are gone with it. At four tabs across a pill bar there is not room for
- * a label without either shrinking the touch target or reintroducing the width
- * change. The icons carry it, and every tab still announces its name to a
- * screen reader.
+ * The active tab still shows its name. The label lives INSIDE a fixed width
+ * slot, so it costs the other tabs nothing: only the icon inside the active
+ * slot shifts, to keep the icon and label pair centred together. That reads as
+ * the pill filling out, not as the bar rearranging itself.
  */
 
 const ICONS: Record<string, { icon: PhosphorIcon; label: string }> = {
@@ -76,22 +79,36 @@ function Tab({
       accessibilityState={{ selected: focused }}
       accessibilityLabel={label}
       onPress={onPress}
-      className="flex-1 items-center justify-center"
+      className="flex-1 flex-row items-center justify-center gap-1.5 px-1"
       style={{ height: PILL_HEIGHT }}
     >
       <View>
         <Animated.View style={restingStyle}>
-          <IconComponent size={23} color={raw.inkFaint} weight="regular" />
+          <IconComponent size={22} color={raw.inkFaint} weight="regular" />
         </Animated.View>
 
         <Animated.View style={activeStyle} className="absolute">
-          <IconComponent size={23} color="#FFFFFF" weight="fill" />
+          <IconComponent size={22} color="#FFFFFF" weight="fill" />
         </Animated.View>
 
         {badge && badge > 0 && !focused ? (
           <View className="absolute -right-1 -top-0.5 h-2 w-2 rounded-pill bg-clay" />
         ) : null}
       </View>
+
+      {focused ? (
+        <Animated.View entering={FadeIn.duration(160)} exiting={FadeOut.duration(90)}>
+          {/* Shrinks rather than pushing: on a narrow phone the slot is about
+              76pt, and truncating a label is better than overflowing the pill. */}
+          <Text
+            variant="label"
+            numberOfLines={1}
+            className="shrink font-body-sb text-ink-inverse"
+          >
+            {label}
+          </Text>
+        </Animated.View>
+      ) : null}
     </Pressable>
   );
 }
