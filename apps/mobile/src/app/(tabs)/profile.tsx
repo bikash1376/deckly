@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Alert, Linking, ScrollView, View } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth, useUser } from "@clerk/clerk-expo";
@@ -12,6 +12,7 @@ import { Chip } from "@/components/ui/chip";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMe, useDeleteAccount } from "@/features/me/hooks";
+import { useConfirm } from "@/components/ui/confirm";
 import { raw } from "@/theme";
 
 const PRIVACY_URL = "https://retenit.app/privacy";
@@ -25,36 +26,34 @@ export default function ProfileScreen() {
 
   const { data: me, isLoading } = useMe();
   const deleteAccount = useDeleteAccount();
+  const ask = useConfirm();
   const [busy, setBusy] = useState(false);
 
-  const confirmDelete = useCallback(() => {
-    Alert.alert(
-      "Delete your account",
-      "This removes your decks, notes and review history for good. It cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            setBusy(true);
-            try {
-              await deleteAccount.mutateAsync();
-              await signOut();
-              router.replace("/(auth)/sign-in");
-            } catch {
-              Alert.alert(
-                "Could not delete your account",
-                "Check your connection and try again. If it keeps failing, email help@retenit.app.",
-              );
-            } finally {
-              setBusy(false);
-            }
-          },
-        },
-      ],
-    );
-  }, [deleteAccount, signOut, router]);
+  const confirmDelete = useCallback(async () => {
+    const ok = await ask({
+      title: "Delete your account?",
+      body: "This removes your decks, notes and review history for good. It cannot be undone.",
+      confirmLabel: "Delete everything",
+      destructive: true,
+    });
+    if (!ok) return;
+
+    setBusy(true);
+    try {
+      await deleteAccount.mutateAsync();
+      await signOut();
+      router.replace("/(auth)/sign-in");
+    } catch {
+      await ask({
+        title: "Could not delete your account",
+        body: "Check your connection and try again. If it keeps failing, email help@retenit.app.",
+        confirmLabel: "Close",
+        cancelLabel: "Dismiss",
+      });
+    } finally {
+      setBusy(false);
+    }
+  }, [ask, deleteAccount, signOut, router]);
 
   const isPremium = me?.entitlement.isPremium ?? false;
   const credits = me?.entitlement.credits ?? 0;
@@ -149,7 +148,13 @@ export default function ProfileScreen() {
         <Button
           label="Sign out"
           variant="secondary"
-          onPress={() => {
+          onPress={async () => {
+            const ok = await ask({
+              title: "Sign out?",
+              body: "Your decks and notes stay on your account.",
+              confirmLabel: "Sign out",
+            });
+            if (!ok) return;
             signOut();
             router.replace("/(auth)/sign-in");
           }}

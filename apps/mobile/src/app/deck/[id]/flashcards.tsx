@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -44,7 +44,15 @@ export default function FlashcardsScreen() {
   const grade = useGradeCard();
   const report = useReportCard();
 
-  const [index, setIndex] = useState(0);
+  /**
+   * Positions still to get right, in order, plus how many are done.
+   *
+   * "Again" means the card was not known, so it goes to the back of the queue
+   * rather than counting as progress. Advancing on Again made the bar fill up
+   * while you were failing, which is both wrong and quietly discouraging.
+   */
+  const [queue, setQueue] = useState<number[]>([]);
+  const [completed, setCompleted] = useState(0);
   const [revealed, setRevealed] = useState(false);
 
   const cardRecord = useMemo(
@@ -58,7 +66,14 @@ export default function FlashcardsScreen() {
     return parsed.success ? parsed.data.cards : [];
   }, [cardRecord]);
 
-  const current = cards[index];
+  useEffect(() => {
+    if (cards.length > 0 && queue.length === 0 && completed === 0) {
+      setQueue(cards.map((_, i) => i));
+    }
+  }, [cards, queue.length, completed]);
+
+  const position = queue[0];
+  const current = position === undefined ? undefined : cards[position];
   const intervals = previewGrades(INITIAL_SRS);
 
   const reveal = useCallback(() => {
@@ -69,19 +84,30 @@ export default function FlashcardsScreen() {
 
   const answer = useCallback(
     (value: ReviewGrade) => {
+      if (position === undefined) return;
+
       if (cardRecord) {
         // Fire and forget. A dropped grade costs one review slot, and blocking
         // the next card on a round trip is far worse for a study session.
-        grade.mutate({ cardId: cardRecord.id, cardIndex: index, grade: value });
+        grade.mutate({ cardId: cardRecord.id, cardIndex: position, grade: value });
       }
-      if (index + 1 >= cards.length) {
-        router.replace(`/deck/${id}`);
+
+      setRevealed(false);
+
+      if (value === "again") {
+        // To the back, not past. It will come round again this session.
+        setQueue((q) => (q.length > 1 ? [...q.slice(1), q[0]!] : q));
         return;
       }
-      setRevealed(false);
-      setIndex((i) => i + 1);
+
+      setCompleted((c) => c + 1);
+      setQueue((q) => {
+        const rest = q.slice(1);
+        if (rest.length === 0) router.replace(`/deck/${id}`);
+        return rest;
+      });
     },
-    [cardRecord, grade, index, cards.length, router, id],
+    [position, cardRecord, grade, router, id],
   );
 
   if (!current) {
@@ -108,9 +134,13 @@ export default function FlashcardsScreen() {
           accessibilityLabel="End session"
           onPress={() => router.back()}
         />
-        <Progress value={(index + 1) / cards.length} tone={data?.deck.color} className="flex-1" />
+        <Progress
+          value={cards.length > 0 ? completed / cards.length : 0}
+          tone={data?.deck.color}
+          className="flex-1"
+        />
         <Text variant="label">
-          {index + 1} of {cards.length}
+          {completed} of {cards.length}
         </Text>
       </View>
 

@@ -28,6 +28,7 @@ import InterTight_700Bold from "@expo-google-fonts/inter-tight/700Bold/InterTigh
 import { tokenCache } from "@/lib/token-cache";
 import { env } from "@/lib/env";
 import { queryClient, persistOptions } from "@/lib/query-client";
+import { ConfirmProvider } from "@/components/ui/confirm";
 import { raw } from "@/theme";
 
 export { ErrorBoundary } from "@/components/error-boundary";
@@ -56,7 +57,8 @@ export default function RootLayout() {
       <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
         <GestureHandlerRootView className="flex-1">
           <SafeAreaProvider>
-            <View className="flex-1 bg-bg">
+            <ConfirmProvider>
+              <View className="flex-1 bg-bg">
               <StatusBar style="dark" backgroundColor={raw.bg} />
               <Stack
                 screenOptions={{
@@ -86,7 +88,8 @@ export default function RootLayout() {
                 <Stack.Screen name="search" />
                 <Stack.Screen name="settings/reminders" />
               </Stack>
-            </View>
+              </View>
+            </ConfirmProvider>
           </SafeAreaProvider>
         </GestureHandlerRootView>
       </PersistQueryClientProvider>

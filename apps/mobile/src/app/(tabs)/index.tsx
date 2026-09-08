@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, RefreshControl, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import * as Haptics from "expo-haptics";
 import { Fire, MagnifyingGlass, Plus, Cards } from "phosphor-react-native";
 import type { Deck } from "@retenit/shared";
 
@@ -12,6 +11,7 @@ import { Chip } from "@/components/ui/chip";
 import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useConfirm } from "@/components/ui/confirm";
 import { DeckCard } from "@/components/deck-card";
 import { useDecks, useDeleteDeck } from "@/features/decks/hooks";
 import { useMe } from "@/features/me/hooks";
@@ -33,6 +33,7 @@ export default function DecksScreen() {
   const { data: decks, isLoading, isError, refetch, isRefetching } = useDecks();
   const { data: me } = useMe();
   const deleteDeck = useDeleteDeck();
+  const ask = useConfirm();
 
   /**
    * Long press rather than swipe. A two column grid has nowhere for a row to
@@ -40,18 +41,15 @@ export default function DecksScreen() {
    * takes its cards and their whole review history with it.
    */
   const confirmDelete = useCallback(
-    (id: string, title: string) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      Alert.alert(
-        `Delete "${title}"?`,
-        "Its cards and everything you have reviewed in it go too. This cannot be undone.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: () => deleteDeck.mutate(id) },
-        ],
-      );
+    async (id: string, title: string) => {
+      const ok = await ask({
+        title: `Delete "${title}"?`,
+        body: "Its cards and everything you have reviewed in it go too. This cannot be undone.",
+        destructive: true,
+      });
+      if (ok) deleteDeck.mutate(id);
     },
-    [deleteDeck],
+    [ask, deleteDeck],
   );
 
   const visible = useMemo(() => {

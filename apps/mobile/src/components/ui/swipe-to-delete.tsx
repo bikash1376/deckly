@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useRef } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   type SharedValue,
@@ -9,9 +9,9 @@ import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Trash } from "phosphor-react-native";
-import * as Haptics from "expo-haptics";
 
 import { Text } from "./text";
+import { useConfirm } from "./confirm";
 
 /**
  * Swipe a row left to reveal delete.
@@ -39,28 +39,19 @@ export function SwipeToDelete({
   children,
 }: SwipeToDeleteProps) {
   const swipeable = useRef<SwipeableMethods>(null);
+  const ask = useConfirm();
 
-  const confirm = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    Alert.alert(
-      `Delete ${itemName}?`,
-      consequence ?? "This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel", onPress: () => swipeable.current?.close() },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            swipeable.current?.close();
-            onDelete();
-          },
-        },
-      ],
-      // Backing out with the system back button should also close the row,
-      // otherwise it sits open with no way to dismiss it but another swipe.
-      { onDismiss: () => swipeable.current?.close() },
-    );
-  }, [itemName, consequence, onDelete]);
+  const confirm = useCallback(async () => {
+    const ok = await ask({
+      title: `Delete ${itemName}?`,
+      body: consequence ?? "This cannot be undone.",
+      destructive: true,
+    });
+    // Closes either way. Cancelling and leaving the row open gives no way back
+    // out but another swipe.
+    swipeable.current?.close();
+    if (ok) onDelete();
+  }, [ask, itemName, consequence, onDelete]);
 
   const renderRight = useCallback(
     (_progress: SharedValue<number>, translation: SharedValue<number>) => (

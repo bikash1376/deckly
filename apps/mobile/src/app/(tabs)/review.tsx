@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -54,12 +54,27 @@ export default function ReviewScreen() {
   const grade = useGradeCard();
   const report = useReportCard();
 
-  const [index, setIndex] = useState(0);
-  const [revealed, setRevealed] = useState(false);
+  /**
+   * Positions still to get right, plus how many are done.
+   *
+   * "Again" sends the card to the back of the queue rather than counting as
+   * progress: the bar should measure what you know, not how many buttons you
+   * have pressed.
+   */
+  const [queue, setQueue] = useState<number[]>([]);
   const [reviewed, setReviewed] = useState(0);
+  const [revealed, setRevealed] = useState(false);
 
   const cards = data?.cards ?? [];
-  const current = cards[index];
+
+  useEffect(() => {
+    if (cards.length > 0 && queue.length === 0 && reviewed === 0) {
+      setQueue(cards.map((_, i) => i));
+    }
+  }, [cards, queue.length, reviewed]);
+
+  const position = queue[0];
+  const current = position === undefined ? undefined : cards[position];
   const intervals = useMemo(() => previewGrades(INITIAL_SRS), []);
 
   const answer = useCallback(
@@ -67,9 +82,15 @@ export default function ReviewScreen() {
       if (!current) return;
       Haptics.selectionAsync().catch(() => {});
       grade.mutate({ cardId: current.id, grade: value });
-      setReviewed((n) => n + 1);
       setRevealed(false);
-      setIndex((i) => i + 1);
+
+      if (value === "again") {
+        setQueue((q) => (q.length > 1 ? [...q.slice(1), q[0]!] : q));
+        return;
+      }
+
+      setReviewed((n) => n + 1);
+      setQueue((q) => q.slice(1));
     },
     [current, grade],
   );
@@ -136,8 +157,8 @@ export default function ReviewScreen() {
       </View>
 
       <View className="mt-4 flex-row items-center gap-3">
-        <Progress value={index / Math.max(cards.length, 1)} className="flex-1" />
-        <Text variant="label">{cards.length - index} left</Text>
+        <Progress value={reviewed / Math.max(cards.length, 1)} className="flex-1" />
+        <Text variant="label">{queue.length} left</Text>
       </View>
 
       {/* Takes the space left over after the action area below has had its

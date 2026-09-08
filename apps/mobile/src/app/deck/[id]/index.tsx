@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -8,11 +8,15 @@ import {
   ChatCircle,
   Flag,
   Sparkle,
-  PencilSimple,
   Trash,
   Cards as CardsIcon,
 } from "phosphor-react-native";
-import { CREDIT_COST, type CardKind } from "@retenit/shared";
+import {
+  CREDIT_COST,
+  Flashcards as FlashcardsSchema,
+  Quiz as QuizSchema,
+  type CardKind,
+} from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Card, PressableCard } from "@/components/ui/card";
@@ -21,6 +25,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton, SkeletonCardBlock } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useConfirm } from "@/components/ui/confirm";
 import { CardContent } from "@/features/decks/card-content";
 import {
   useDeck,
@@ -61,6 +66,7 @@ export default function DeckScreen() {
   const generate = useGenerateCard(id);
   const report = useReportCard();
   const removeDeck = useDeleteDeck();
+  const ask = useConfirm();
 
   const [pending, setPending] = useState<Generatable | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +77,27 @@ export default function DeckScreen() {
   );
 
   const remaining = GENERATABLE.filter((g) => !generated.has(g.kind));
+
+  /**
+   * Counted from the card content rather than the deck's aggregate.
+   *
+   * cardsTotal is a server side count over the reviews table and lags any
+   * write until the deck is refetched. The content is right here, and it is
+   * exactly what the study screen will page through.
+   */
+  const flashcardCount = useMemo(() => {
+    const card = data?.cards.find((c) => c.kind === "flashcards");
+    if (!card) return 0;
+    const parsed = FlashcardsSchema.safeParse(card.content);
+    return parsed.success ? parsed.data.cards.length : 0;
+  }, [data?.cards]);
+
+  const quizCount = useMemo(() => {
+    const card = data?.cards.find((c) => c.kind === "quiz");
+    if (!card) return 0;
+    const parsed = QuizSchema.safeParse(card.content);
+    return parsed.success ? parsed.data.questions.length : 0;
+  }, [data?.cards]);
 
   const run = useCallback(
     async (kind: Generatable) => {
@@ -135,23 +162,16 @@ export default function DeckScreen() {
           icon={Trash}
           tone="bare"
           accessibilityLabel="Delete this deck"
-          onPress={() =>
-            Alert.alert(
-              `Delete "${data.deck.title}"?`,
-              "Its cards and everything you have reviewed in it go too. This cannot be undone.",
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Delete",
-                  style: "destructive",
-                  onPress: () => {
-                    removeDeck.mutate(id);
-                    router.replace("/(tabs)");
-                  },
-                },
-              ],
-            )
-          }
+          onPress={async () => {
+            const ok = await ask({
+              title: `Delete "${data.deck.title}"?`,
+              body: "Its cards and everything you have reviewed in it go too. This cannot be undone.",
+              destructive: true,
+            });
+            if (!ok) return;
+            removeDeck.mutate(id);
+            router.replace("/(tabs)");
+          }}
         />
       </View>
 
@@ -191,7 +211,9 @@ export default function DeckScreen() {
           title="Flashcards"
           subtitle={
             generated.has("flashcards")
-              ? `${deck.cardsTotal} cards`
+              ? flashcardCount === 1
+                ? "1 card"
+                : `${flashcardCount} cards`
               : hasSource
                 ? `Not made yet, ${CREDIT_COST.flashcards} credits`
                 : "Not written yet, tap to start"
@@ -204,14 +226,16 @@ export default function DeckScreen() {
                 : () => router.push(`/deck/${id}/edit-flashcards`)
           }
           busy={pending === "flashcards"}
-          onEdit={() => router.push(`/deck/${id}/edit-flashcards`)}
+          onLongPress={() => router.push(`/deck/${id}/edit-flashcards`)}
         />
 
         <StudyRow
           title="Quiz"
           subtitle={
             generated.has("quiz")
-              ? "Test yourself"
+              ? quizCount === 1
+                ? "1 question"
+                : `${quizCount} questions`
               : hasSource
                 ? `Not made yet, ${CREDIT_COST.quiz} credits`
                 : "Not written yet, tap to start"
@@ -224,7 +248,7 @@ export default function DeckScreen() {
                 : () => router.push(`/deck/${id}/edit-quiz`)
           }
           busy={pending === "quiz"}
-          onEdit={() => router.push(`/deck/${id}/edit-quiz`)}
+          onLongPress={() => router.push(`/deck/${id}/edit-quiz`)}
         />
 
         {/* Only meaningful when there is source material behind the deck. A
@@ -348,21 +372,22 @@ function StudyRow({
   title,
   subtitle,
   onPress,
-  onEdit,
+  onLongPress,
   busy,
   icon: IconComponent,
 }: {
   title: string;
   subtitle: string;
   onPress: () => void;
-  /** Present on anything that can also be written by hand. */
-  onEdit?: () => void;
+  /** Long press opens the editor, on anything that can be written by hand. */
+  onLongPress?: () => void;
   busy?: boolean;
   icon?: typeof ChatCircle;
 }) {
   return (
     <PressableCard
       onPress={onPress}
+      onLongPress={onLongPress}
       disabled={busy}
       accessibilityLabel={`${title}. ${subtitle}`}
       className="mb-2.5 flex-row items-center justify-between p-4"
@@ -371,22 +396,11 @@ function StudyRow({
         <Text variant="heading">{busy ? "Generating" : title}</Text>
         <Text variant="caption">{subtitle}</Text>
       </View>
-      <View className="flex-row items-center gap-1">
-        {onEdit ? (
-          <IconButton
-            icon={PencilSimple}
-            tone="bare"
-            size="sm"
-            accessibilityLabel={`Write ${title.toLowerCase()} by hand`}
-            onPress={onEdit}
-          />
-        ) : null}
-        {IconComponent ? (
-          <IconComponent size={19} color={raw.inkFaint} weight="regular" />
-        ) : (
-          <CaretRight size={19} color={raw.inkFaint} weight="regular" />
-        )}
-      </View>
+      {IconComponent ? (
+        <IconComponent size={19} color={raw.inkFaint} weight="regular" />
+      ) : (
+        <CaretRight size={19} color={raw.inkFaint} weight="regular" />
+      )}
     </PressableCard>
   );
 }

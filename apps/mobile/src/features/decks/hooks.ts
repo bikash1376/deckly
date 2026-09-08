@@ -71,11 +71,19 @@ export function useGenerateCard(deckId: string) {
     mutationFn: (kind: Exclude<CardKind, "seed">) =>
       api.post(`/decks/${deckId}/cards`, { kind }, Card),
     onSuccess: (card) => {
+      // Show it immediately...
       qc.setQueryData(deckKeys.detail(deckId), (previous: unknown) => {
         if (!previous) return previous;
         const detail = previous as { cards: unknown[] };
         return { ...detail, cards: [...detail.cards, card] };
       });
+      // ...then refetch, because cardsTotal and cardsDone are aggregates the
+      // server computes over the reviews table. Generating flashcards creates
+      // those rows, and no amount of patching the cache locally will produce
+      // the new counts.
+      qc.invalidateQueries({ queryKey: deckKeys.detail(deckId) });
+      qc.invalidateQueries({ queryKey: deckKeys.list() });
+      qc.invalidateQueries({ queryKey: ["review"] });
       // Credits changed, so the meter and any gated buttons need to know.
       qc.invalidateQueries({ queryKey: ["me"] });
     },
