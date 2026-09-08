@@ -9,7 +9,8 @@ import { PressableCard } from "@/components/ui/card";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useNotes } from "@/features/notes/hooks";
+import { SwipeToDelete } from "@/components/ui/swipe-to-delete";
+import { useNotes, useDeleteNote } from "@/features/notes/hooks";
 import { useMe } from "@/features/me/hooks";
 import { raw } from "@/theme";
 
@@ -19,6 +20,7 @@ export default function PadScreen() {
 
   const { data: notes, isLoading, refetch, isRefetching } = useNotes();
   const { data: me } = useMe();
+  const deleteNote = useDeleteNote();
 
   const limit = me?.entitlement.noteLimit ?? 2;
   const used = notes?.length ?? 0;
@@ -66,21 +68,27 @@ export default function PadScreen() {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={raw.inkMuted} />
         }
         renderItem={({ item }) => (
-          <PressableCard
-            onPress={() => router.push(`/note/${item.id}`)}
-            accessibilityLabel={item.title || "Untitled note"}
-            className="p-4"
+          <SwipeToDelete
+            itemName={item.title ? `"${item.title}"` : "this note"}
+            consequence="Everything you wrote in it is gone for good."
+            onDelete={() => deleteNote.mutate(item.id)}
           >
-            <Text variant="heading" numberOfLines={1}>
-              {item.title || "Untitled note"}
-            </Text>
-            <Text variant="body" className="mt-1 text-ink-muted" numberOfLines={2}>
-              {item.body || "Empty"}
-            </Text>
-            <Text variant="caption" className="mt-2 text-ink-faint">
-              {relativeTime(item.updatedAt)}
-            </Text>
-          </PressableCard>
+            <PressableCard
+              onPress={() => router.push(`/note/${item.id}`)}
+              accessibilityLabel={item.title || "Untitled note"}
+              className="p-4"
+            >
+              <Text variant="heading" numberOfLines={1}>
+                {item.title || "Untitled note"}
+              </Text>
+              <Text variant="body" className="mt-1 text-ink-muted" numberOfLines={2}>
+                {item.body || "Empty"}
+              </Text>
+              <Text variant="caption" className="mt-2 text-ink-faint">
+                {relativeTime(item.updatedAt)}
+              </Text>
+            </PressableCard>
+          </SwipeToDelete>
         )}
         ListEmptyComponent={
           <EmptyState

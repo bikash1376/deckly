@@ -38,6 +38,7 @@ export function Card({ tone = "elevated", className, style, ...rest }: CardProps
 
 export interface PressableCardProps extends CardProps {
   onPress?: () => void;
+  onLongPress?: () => void;
   accessibilityLabel?: string;
   disabled?: boolean;
 }
@@ -47,6 +48,7 @@ export function PressableCard({
   className,
   style,
   onPress,
+  onLongPress,
   disabled,
   accessibilityLabel,
   children,
@@ -60,6 +62,7 @@ export function PressableCard({
       accessibilityLabel={accessibilityLabel}
       disabled={disabled}
       onPress={onPress}
+      onLongPress={onLongPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
       style={[press.style, tone === "elevated" ? shadow.card : null, style]}

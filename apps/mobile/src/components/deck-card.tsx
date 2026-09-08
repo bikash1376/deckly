@@ -25,6 +25,8 @@ export interface DeckCardProps {
   color?: DeckColorKey;
   locked?: boolean;
   onPress?: () => void;
+  /** Long press. A grid has nowhere for a swipe to reveal an action. */
+  onLongPress?: () => void;
 }
 
 export function DeckCard({
@@ -35,6 +37,7 @@ export function DeckCard({
   color,
   locked = false,
   onPress,
+  onLongPress,
 }: DeckCardProps) {
   const key = color ?? colorForId(id);
   const tone = deckClass[key];
@@ -50,6 +53,7 @@ export function DeckCard({
     <PressableCard
       tone="flat"
       onPress={onPress}
+      onLongPress={onLongPress}
       accessibilityLabel={`${title}. ${subtitle}`}
       className="bg-transparent"
     >

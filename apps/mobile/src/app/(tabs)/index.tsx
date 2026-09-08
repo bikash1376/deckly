@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
-import { FlatList, RefreshControl, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Alert, FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Fire, MagnifyingGlass, Plus, Cards } from "phosphor-react-native";
 import type { Deck } from "@retenit/shared";
 
@@ -12,7 +13,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DeckCard } from "@/components/deck-card";
-import { useDecks } from "@/features/decks/hooks";
+import { useDecks, useDeleteDeck } from "@/features/decks/hooks";
 import { useMe } from "@/features/me/hooks";
 import { raw, shadow } from "@/theme";
 
@@ -31,6 +32,27 @@ export default function DecksScreen() {
 
   const { data: decks, isLoading, isError, refetch, isRefetching } = useDecks();
   const { data: me } = useMe();
+  const deleteDeck = useDeleteDeck();
+
+  /**
+   * Long press rather than swipe. A two column grid has nowhere for a row to
+   * slide, and the confirmation matters more than the gesture: deleting a deck
+   * takes its cards and their whole review history with it.
+   */
+  const confirmDelete = useCallback(
+    (id: string, title: string) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      Alert.alert(
+        `Delete "${title}"?`,
+        "Its cards and everything you have reviewed in it go too. This cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: () => deleteDeck.mutate(id) },
+        ],
+      );
+    },
+    [deleteDeck],
+  );
 
   const visible = useMemo(() => {
     if (!decks) return [];
@@ -121,6 +143,7 @@ export default function DecksScreen() {
               done={item.cardsDone}
               total={item.cardsTotal}
               onPress={() => router.push(`/deck/${item.id}`)}
+              onLongPress={() => confirmDelete(item.id, item.title)}
             />
           </View>
         )}

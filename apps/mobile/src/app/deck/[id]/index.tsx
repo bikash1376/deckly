@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -9,6 +9,7 @@ import {
   Flag,
   Sparkle,
   PencilSimple,
+  Trash,
   Cards as CardsIcon,
 } from "phosphor-react-native";
 import { CREDIT_COST, type CardKind } from "@retenit/shared";
@@ -21,7 +22,13 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton, SkeletonCardBlock } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CardContent } from "@/features/decks/card-content";
-import { useDeck, useGenerateCard, useReportCard, useWeakTopics } from "@/features/decks/hooks";
+import {
+  useDeck,
+  useGenerateCard,
+  useReportCard,
+  useWeakTopics,
+  useDeleteDeck,
+} from "@/features/decks/hooks";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { deckClass, raw } from "@/theme";
@@ -53,6 +60,7 @@ export default function DeckScreen() {
   const { data: weakTopics } = useWeakTopics(id);
   const generate = useGenerateCard(id);
   const report = useReportCard();
+  const removeDeck = useDeleteDeck();
 
   const [pending, setPending] = useState<Generatable | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -121,8 +129,30 @@ export default function DeckScreen() {
       contentContainerClassName="pb-16"
       contentContainerStyle={{ paddingTop: insets.top + 12 }}
     >
-      <View className="px-gutter">
+      <View className="flex-row items-center justify-between px-gutter">
         <IconButton icon={ArrowLeft} accessibilityLabel="Back" onPress={() => router.back()} />
+        <IconButton
+          icon={Trash}
+          tone="bare"
+          accessibilityLabel="Delete this deck"
+          onPress={() =>
+            Alert.alert(
+              `Delete "${data.deck.title}"?`,
+              "Its cards and everything you have reviewed in it go too. This cannot be undone.",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Delete",
+                  style: "destructive",
+                  onPress: () => {
+                    removeDeck.mutate(id);
+                    router.replace("/(tabs)");
+                  },
+                },
+              ],
+            )
+          }
+        />
       </View>
 
       {/* Coloured hero. The deck's identity is the only place its colour is
