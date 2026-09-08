@@ -121,20 +121,17 @@ export function PadSettingsSheet({
         </SheetRow>
 
         <SheetRow
-          label="Grammar check"
+          label="Check my writing"
           hint={
             grammarAvailable
-              ? "Underlines problems as you write. Tap one to see the fix."
-              : "Not set up yet. Spelling is still checked by your keyboard."
+              ? "Underlines spelling and grammar. Tap one to see the fix."
+              : "Underlines spelling, checked on your device with nothing sent anywhere. Tap one to see the fix."
           }
         >
           <View className="flex-row items-center justify-between rounded-tile border-[1.5px] border-hairline bg-surface px-4 py-3">
-            <Text variant="subheading" className={grammarAvailable ? "text-ink" : "text-ink-faint"}>
-              Underline mistakes
-            </Text>
+            <Text variant="subheading">Underline mistakes</Text>
             <Switch
-              value={t.grammarEnabled && grammarAvailable}
-              disabled={!grammarAvailable}
+              value={t.grammarEnabled}
               onValueChange={t.setGrammarEnabled}
               trackColor={{ true: raw.ink, false: raw.hairline }}
               thumbColor="#FFFFFF"

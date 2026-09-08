@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { GrammarIssue } from "@retenit/shared";
 import { env } from "@/lib/env";
+import { findMisspellings } from "./spell";
 
 /**
  * Grammar checking, off the AI path entirely.
@@ -10,15 +11,17 @@ import { env } from "@/lib/env";
  * minute of typing. Grammar is a solved problem with a deterministic tool, so
  * this speaks the LanguageTool HTTP protocol instead.
  *
+ * Two layers, and the useful one needs no setup:
+ *
+ *   Spelling  runs on device against a bundled Hunspell dictionary. Always
+ *             available, offline, free, no configuration.
+ *   Grammar   needs a LanguageTool endpoint, and only runs if one is set.
+ *
  * It deliberately does NOT point at LanguageTool's free public endpoint by
  * default. Their terms say not to send automated requests and to self-host or
  * buy an Enterprise plan for exactly this use, so shipping against it would be
- * a violation. Set EXPO_PUBLIC_GRAMMAR_API_URL to a self-hosted instance and
- * the feature lights up; leave it unset and the toggle stays disabled with an
- * explanation rather than silently failing.
- *
- * Spelling squiggles come free from Android's own keyboard, on device, with no
- * network at all. This adds the grammar half that Android has no API for.
+ * a violation. Without a URL the checker still catches spelling, which is the
+ * overwhelming majority of what anyone actually fixes.
  */
 
 const CATEGORY: Record<string, GrammarIssue["category"]> = {
@@ -39,6 +42,7 @@ const MAX_CHARS = 15_000;
 /** Long enough that it fires between sentences, not between letters. */
 const DEBOUNCE_MS = 1_200;
 
+/** Whether the optional grammar layer is available on top of spelling. */
 export const isGrammarConfigured = () => !!env.grammarApiUrl;
 
 interface LanguageToolMatch {
@@ -103,7 +107,8 @@ export function useGrammar(text: string, enabled: boolean): UseGrammarResult {
   const controller = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (!enabled || !isGrammarConfigured() || text.trim().length < 12) {
+    // Spelling works with no configuration, so the only gate is the toggle.
+    if (!enabled || text.trim().length < 12) {
       setIssues([]);
       setError(null);
       return;
@@ -116,12 +121,35 @@ export function useGrammar(text: string, enabled: boolean): UseGrammarResult {
 
       setChecking(true);
       try {
-        setIssues(await check(text, next.signal));
-        setError(null);
-      } catch (caught) {
-        if ((caught as Error)?.name === "AbortError") return;
-        setIssues([]);
-        setError("Could not reach the grammar checker.");
+        // Spelling first, and independently: it is local and cannot fail for
+        // network reasons, so a missing or unreachable grammar server must
+        // never take the working half down with it.
+        const spelling = await findMisspellings(text).catch(() => []);
+
+        let grammar: GrammarIssue[] = [];
+        let reachable = true;
+        if (env.grammarApiUrl) {
+          try {
+            grammar = await check(text, next.signal);
+          } catch (caught) {
+            if ((caught as Error)?.name === "AbortError") return;
+            reachable = false;
+          }
+        }
+
+        // Grammar wins where the two overlap: "their" flagged as a confused
+        // word is more useful than the same span flagged as unknown.
+        const claimed = new Set<number>();
+        for (const issue of grammar) {
+          for (let i = issue.offset; i < issue.offset + issue.length; i++) claimed.add(i);
+        }
+        const merged = [
+          ...grammar,
+          ...spelling.filter((issue) => !claimed.has(issue.offset)),
+        ].sort((a, b) => a.offset - b.offset);
+
+        setIssues(merged);
+        setError(reachable ? null : "Grammar server unreachable. Spelling still checked.");
       } finally {
         setChecking(false);
       }

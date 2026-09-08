@@ -143,7 +143,8 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Notes list screen with free-tier counter
 - [x] Editor with autosave, inline issue underlines and tap-to-fix
 - [x] Typography settings sheet: 6 typefaces, size, weight, line height, tracking
-- [x] Grammar check off the AI path (LanguageTool protocol), off by default
+- [x] Spell check on device (bundled Hunspell, 542 KB, no server, no key)
+- [x] Optional grammar layer via a LanguageTool endpoint, off by default
 - [ ] Inline grammar issue highlighting + accept/dismiss
 - [x] Turn this note into a deck
 - [x] Debounced autosave
