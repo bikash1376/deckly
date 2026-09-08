@@ -67,7 +67,11 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 
 ## 5. OCR — photo of notes → deck
 
-- [ ] On-device OCR via ML Kit (`@react-native-ml-kit/text-recognition`) — free, offline, printed text
+- [ ] On-device OCR via ML Kit — free, offline, printed text
+- [ ] **Use the unbundled ML Kit variant** (`com.google.android.gms:play-services-mlkit-text-recognition`)
+      via config plugin — ~0 MB APK cost vs ~4 MB bundled. Verify which variant the RN
+      wrapper pulls by default (most default to bundled) and override the Gradle dep.
+- [ ] Prefetch the OCR model during onboarding so the first scan has no wait
 - [ ] Camera + gallery capture flow (`expo-image-picker`)
 - [ ] Confidence heuristic: too few chars → offer server fallback
 - [ ] Server vision fallback for handwriting / diagrams / math (Groq vision), charged in credits
