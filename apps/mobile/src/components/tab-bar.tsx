@@ -189,7 +189,12 @@ export function TabBar({ state, navigation, dueCount = 0 }: TabBarProps) {
         style={[shadow.floating, { height: BAR_HEIGHT, paddingHorizontal: BAR_PADDING }]}
         className="flex-row items-center rounded-pill bg-surface"
       >
-        <View className="flex-1 flex-row items-center justify-between">
+        {/* Evenly, not between. `justify-between` pins the first and last tabs
+            to the track edges, so the active pill on "You" ended up hard
+            against the right of the bar with only the 8pt bar padding beside
+            it, and "Decks" had the same problem on the left. Even spacing puts
+            a real gap at both ends. */}
+        <View className="flex-1 flex-row items-center justify-evenly">
           {/* Behind the icons, and the only thing that moves. */}
           {target ? (
             <Animated.View
