@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { ArrowLeft, Sparkle, TextAa, Cards as CardsIcon, X } from "phosphor-react-native";
-import { CREDIT_COST, type GrammarCheck, type EnhanceResult } from "@retenit/shared";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { ArrowLeft, TextAa, Cards as CardsIcon, X } from "phosphor-react-native";
+import type { GrammarIssue } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
@@ -15,12 +15,14 @@ import {
   useNote,
   useCreateNote,
   useSaveNote,
-  useGrammarCheck,
-  useEnhance,
   useNoteToDeck,
 } from "@/features/notes/hooks";
+import { PadSettingsSheet } from "@/features/pad/settings-sheet";
+import { useTypography, resolveTextStyle } from "@/features/pad/typography";
+import { usePadFonts } from "@/features/pad/fonts";
+import { useGrammar, segment, applyReplacement } from "@/features/pad/grammar";
 import { ApiError } from "@/lib/api";
-import { raw, shadow } from "@/theme";
+import { raw } from "@/theme";
 
 const AUTOSAVE_MS = 1200;
 
@@ -35,18 +37,23 @@ export default function NoteEditorScreen() {
   const [noteId, setNoteId] = useState(isNew ? null : id);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [selection, setSelection] = useState({ start: 0, end: 0 });
   const [saved, setSaved] = useState<string | null>(null);
-
-  const [issues, setIssues] = useState<GrammarCheck["issues"]>([]);
-  const [issueIndex, setIssueIndex] = useState(0);
-  const [options, setOptions] = useState<EnhanceResult["options"] | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activeIssue, setActiveIssue] = useState<GrammarIssue | null>(null);
 
   const createNote = useCreateNote();
   const saveNote = useSaveNote(noteId ?? "");
-  const grammar = useGrammarCheck();
-  const enhance = useEnhance();
   const toDeck = useNoteToDeck();
+
+  const typography = useTypography();
+  // Loads in the background. Until it resolves the editor renders in the system
+  // face, which is a better first frame than a blank screen.
+  const padFontsReady = usePadFonts();
+  const textStyle = useMemo(
+    () => (padFontsReady ? resolveTextStyle(typography) : { fontSize: typography.size }),
+    [typography, padFontsReady],
+  );
+  const { issues, checking } = useGrammar(body, typography.grammarEnabled);
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydrated = useRef(false);
@@ -94,66 +101,20 @@ export default function NoteEditorScreen() {
 
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 
-  const selected = useMemo(
-    () => body.slice(selection.start, selection.end).trim(),
-    [body, selection],
-  );
-  const hasSelection = selected.length > 8;
-
-  const runGrammar = useCallback(async () => {
-    const target = hasSelection ? selected : body;
-    if (target.trim().length < 8) return;
-    try {
-      const result = await grammar.mutateAsync({ text: target });
-      setIssues(result.issues);
-      setIssueIndex(0);
-    } catch (caught) {
-      if (caught instanceof ApiError && caught.isOutOfCredits) router.push("/paywall");
-    }
-  }, [hasSelection, selected, body, grammar, router]);
-
-  const runEnhance = useCallback(async () => {
-    if (!hasSelection) return;
-    try {
-      const result = await enhance.mutateAsync({ text: selected });
-      setOptions(result.options);
-    } catch (caught) {
-      if (caught instanceof ApiError && caught.isOutOfCredits) router.push("/paywall");
-    }
-  }, [hasSelection, selected, enhance, router]);
-
-  const applyIssue = useCallback(() => {
-    const issue = issues[issueIndex];
-    if (!issue) return;
-
-    // Replace the first exact occurrence. The model is asked for a verbatim
-    // substring precisely so this stays a plain string operation rather than a
-    // fuzzy match that could rewrite the wrong sentence.
-    const at = body.indexOf(issue.original);
-    if (at >= 0) {
-      const next = body.slice(0, at) + issue.suggestion + body.slice(at + issue.original.length);
+  const changeBody = useCallback(
+    (next: string) => {
       setBody(next);
-      scheduleSave(title, next);
-    }
-    advanceIssue();
-  }, [issues, issueIndex, body, title, scheduleSave]);
-
-  const advanceIssue = useCallback(() => {
-    setIssueIndex((i) => {
-      const next = i + 1;
-      if (next >= issues.length) setIssues([]);
-      return next;
-    });
-  }, [issues.length]);
-
-  const applyOption = useCallback(
-    (text: string) => {
-      const next = body.slice(0, selection.start) + text + body.slice(selection.end);
-      setBody(next);
-      setOptions(null);
+      setActiveIssue(null);
       scheduleSave(title, next);
     },
-    [body, selection, title, scheduleSave],
+    [title, scheduleSave],
+  );
+
+  const fixIssue = useCallback(
+    (issue: GrammarIssue, replacement: string) => {
+      changeBody(applyReplacement(body, issue, replacement));
+    },
+    [body, changeBody],
   );
 
   const makeDeck = useCallback(async () => {
@@ -166,7 +127,11 @@ export default function NoteEditorScreen() {
     }
   }, [noteId, toDeck, router]);
 
-  const issue = issues[issueIndex];
+  const showSegments = typography.grammarEnabled && issues.length > 0;
+  const segments = useMemo(
+    () => (showSegments ? segment(body, issues) : []),
+    [showSegments, body, issues],
+  );
 
   return (
     <KeyboardAvoidingView
@@ -188,15 +153,25 @@ export default function NoteEditorScreen() {
           }}
         />
         <Text variant="caption">
-          {saved ?? (createNote.isPending || saveNote.isPending ? "Saving" : "Not saved yet")}
+          {checking
+            ? "Checking"
+            : (saved ?? (createNote.isPending || saveNote.isPending ? "Saving" : "Not saved yet"))}
         </Text>
-        <IconButton
-          icon={CardsIcon}
-          tone="bare"
-          accessibilityLabel="Turn this note into a deck"
-          disabled={!noteId || toDeck.isPending || body.trim().length < 40}
-          onPress={makeDeck}
-        />
+        <View className="flex-row">
+          <IconButton
+            icon={CardsIcon}
+            tone="bare"
+            accessibilityLabel="Turn this note into a deck"
+            disabled={!noteId || toDeck.isPending || body.trim().length < 40}
+            onPress={makeDeck}
+          />
+          <IconButton
+            icon={TextAa}
+            tone="bare"
+            accessibilityLabel="Writing settings"
+            onPress={() => setSettingsOpen(true)}
+          />
+        </View>
       </View>
 
       <ScrollView
@@ -215,136 +190,134 @@ export default function NoteEditorScreen() {
           className="font-display text-title text-ink"
         />
 
+        {/*
+          Two rendering paths on purpose.
+
+          With grammar off, or with nothing flagged, this is a plain controlled
+          TextInput: the simplest thing, and the one least likely to fight the
+          Android keyboard over cursor position.
+
+          With issues present it renders styled child Text runs instead, which
+          is React Native's supported way to mark up ranges inside an input, so
+          the underline sits under exactly the offending characters rather than
+          under a guess found by searching for the word.
+
+          Android ignores textDecorationStyle, so there is no true wavy line
+          available. A danger coloured underline plus a faint tint reads the
+          same and, unlike a squiggle, is comfortably tappable.
+        */}
         <TextInput
-          value={body}
-          onChangeText={(next) => {
-            setBody(next);
-            scheduleSave(title, next);
-          }}
-          onSelectionChange={(event) => setSelection(event.nativeEvent.selection)}
           multiline
           autoFocus={isNew}
-          placeholder="Start writing. Select a passage to check it or ask for a cleaner version."
+          onChangeText={changeBody}
+          placeholder="Start writing."
           placeholderTextColor={raw.inkFaint}
           selectionColor={raw.clay}
           textAlignVertical="top"
-          className="mt-4 min-h-[320px] font-body text-body-lg text-ink"
-        />
+          // Android's own keyboard does the spelling squiggles, on device and
+          // free. This only has to add the grammar half.
+          autoCorrect
+          spellCheck
+          style={textStyle}
+          className="mt-4 min-h-[320px] text-ink"
+          {...(showSegments ? {} : { value: body })}
+        >
+          {showSegments
+            ? segments.map((part, i) =>
+                part.issue ? (
+                  <Text
+                    key={i}
+                    raw
+                    onPress={() => setActiveIssue(part.issue)}
+                    style={[
+                      textStyle,
+                      {
+                        textDecorationLine: "underline",
+                        textDecorationColor: raw.danger,
+                        backgroundColor: "#F5E6E3",
+                      },
+                    ]}
+                  >
+                    {part.text}
+                  </Text>
+                ) : (
+                  <Text key={i} raw style={textStyle}>
+                    {part.text}
+                  </Text>
+                ),
+              )
+            : null}
+        </TextInput>
       </ScrollView>
 
-      {/* Selection toolbar. Appears only when there is enough text to act on,
-          so it does not flicker on every cursor move. */}
-      {hasSelection && !issue && !options ? (
+      {typography.grammarEnabled && issues.length > 0 && !activeIssue ? (
+        <View
+          className="absolute inset-x-gutter"
+          style={{ bottom: insets.bottom + 24 }}
+          pointerEvents="none"
+        >
+          <Chip
+            label={issues.length === 1 ? "1 thing to look at" : `${issues.length} things to look at`}
+            tone="danger"
+            className="self-center"
+          />
+        </View>
+      ) : null}
+
+      {activeIssue ? (
         <Animated.View
           entering={FadeIn.duration(160)}
-          exiting={FadeOut.duration(120)}
-          className="absolute inset-x-gutter"
-          style={{ bottom: insets.bottom + 24 }}
-        >
-          <View
-            style={shadow.floating}
-            className="flex-row items-center gap-2 rounded-pill bg-surface p-2"
-          >
-            <Chip
-              label={`Grammar, ${CREDIT_COST.grammar}`}
-              tone="outline"
-              icon={TextAa}
-              onPress={runGrammar}
-            />
-            <Chip
-              label={`Enhance, ${CREDIT_COST.enhance}`}
-              tone="outline"
-              icon={Sparkle}
-              onPress={runEnhance}
-            />
-            {grammar.isPending || enhance.isPending ? (
-              <Text variant="caption" className="ml-1">
-                Working
-              </Text>
-            ) : null}
-          </View>
-        </Animated.View>
-      ) : null}
-
-      {issue ? (
-        <Animated.View
-          entering={FadeIn.duration(180)}
           className="absolute inset-x-gutter"
           style={{ bottom: insets.bottom + 24 }}
         >
           <Card className="p-4">
-            <View className="mb-2.5 flex-row items-center justify-between">
+            <View className="mb-2 flex-row items-start justify-between gap-3">
               <Text variant="overline" className="text-danger">
-                {issue.kind}
+                {activeIssue.category}
               </Text>
-              <Text variant="caption">
-                {issueIndex + 1} of {issues.length}
-              </Text>
-            </View>
-
-            <View className="flex-row items-center gap-2">
-              <Text variant="body" className="text-ink-faint line-through">
-                {issue.original}
-              </Text>
-              <Text variant="subheading" className="font-body-sb">
-                {issue.suggestion}
-              </Text>
-            </View>
-            <Text variant="caption" className="mt-0.5">
-              {issue.note}
-            </Text>
-
-            <View className="mt-3 flex-row gap-2">
-              <View className="flex-1">
-                <Button label="Fix" size="md" onPress={applyIssue} />
-              </View>
-              <View className="flex-1">
-                <Button label="Ignore" size="md" variant="secondary" onPress={advanceIssue} />
-              </View>
-            </View>
-          </Card>
-        </Animated.View>
-      ) : null}
-
-      {options ? (
-        <Animated.View
-          entering={FadeIn.duration(180)}
-          className="absolute inset-x-gutter"
-          style={{ bottom: insets.bottom + 24 }}
-        >
-          <Card className="p-4">
-            <View className="mb-3 flex-row items-center justify-between">
-              <Text variant="overline">Pick a version</Text>
               <IconButton
                 icon={X}
                 tone="bare"
                 size="sm"
                 accessibilityLabel="Dismiss"
-                onPress={() => setOptions(null)}
+                onPress={() => setActiveIssue(null)}
               />
             </View>
 
-            <View className="gap-2.5">
-              {options.map((option) => (
-                <View key={option.label} className="gap-1.5">
-                  <Chip label={option.label} tone="neutral" />
-                  <Text variant="body">{option.text}</Text>
-                  <Button
-                    label="Use this"
-                    size="md"
-                    variant="secondary"
-                    onPress={() => applyOption(option.text)}
-                  />
-                </View>
-              ))}
-            </View>
+            <Text variant="body">{activeIssue.shortMessage || activeIssue.message}</Text>
 
-            <Text variant="caption" className="mt-3">
-              Your original is untouched until you pick one.
-            </Text>
+            {activeIssue.replacements.length > 0 ? (
+              <View className="mt-3 flex-row flex-wrap gap-2">
+                {activeIssue.replacements.map((replacement) => (
+                  <Chip
+                    key={replacement}
+                    label={replacement}
+                    tone="outline"
+                    onPress={() => {
+                      fixIssue(activeIssue, replacement);
+                      setActiveIssue(null);
+                    }}
+                  />
+                ))}
+              </View>
+            ) : (
+              <Text variant="caption" className="mt-2">
+                No suggested fix for this one.
+              </Text>
+            )}
+
+            <Button
+              label="Leave it"
+              variant="secondary"
+              size="md"
+              className="mt-3"
+              onPress={() => setActiveIssue(null)}
+            />
           </Card>
         </Animated.View>
       ) : null}
+
+      <PadSettingsSheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </KeyboardAvoidingView>
   );
 }

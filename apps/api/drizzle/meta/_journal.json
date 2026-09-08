@@ -8,6 +8,13 @@
       "when": 1788862360621,
       "tag": "0000_nosy_domino",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788869620738,
+      "tag": "0001_chubby_mandrill",
+      "breakpoints": true
     }
   ]
 }

@@ -31,9 +31,15 @@ export interface Vars {
   MODEL_QUALITY: string;
 }
 
-export interface Bindings extends Secrets, Vars {
-  UPLOADS: R2Bucket;
-}
+/**
+ * No object storage binding on purpose.
+ *
+ * A PDF is read for its text and then thrown away, so there is nothing to keep.
+ * Storing the source document would mean holding a student's coursework
+ * indefinitely, which is a liability with no product benefit: the deck is the
+ * artefact, the PDF is just how it got here.
+ */
+export interface Bindings extends Secrets, Vars {}
 
 /** Everything hung on the Hono context by middleware. */
 export interface Variables {

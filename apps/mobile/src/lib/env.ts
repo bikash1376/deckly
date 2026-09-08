@@ -26,4 +26,12 @@ export const env = {
   apiUrl: required("EXPO_PUBLIC_API_URL", process.env.EXPO_PUBLIC_API_URL),
   /** Android only for v1, so a single key rather than a platform switch. */
   revenueCatKey: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? "",
+  /**
+   * A LanguageTool compatible endpoint for grammar checking, optional.
+   *
+   * Deliberately empty by default. LanguageTool's free public API forbids
+   * automated requests from an app, so this must point at a self-hosted
+   * instance. Unset, the grammar toggle stays disabled and says why.
+   */
+  grammarApiUrl: process.env.EXPO_PUBLIC_GRAMMAR_API_URL ?? "",
 } as const;

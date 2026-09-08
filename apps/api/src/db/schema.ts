@@ -243,26 +243,3 @@ export const reports = pgTable(
   },
   (t) => [index("reports_created_idx").on(sql`${t.createdAt} DESC`)],
 );
-
-/**
- * Short lived upload tickets.
- *
- * The app asks for one, then PUTs the file to the Worker with the token. This
- * keeps R2 access keys out of existence entirely: there is nothing to presign
- * and nothing extra to leak.
- */
-export const uploadTickets = pgTable(
-  "upload_tickets",
-  {
-    token: text("token").primaryKey(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    key: text("key").notNull(),
-    contentType: text("content_type").notNull(),
-    maxBytes: integer("max_bytes").notNull(),
-    consumedAt: timestamp("consumed_at", { withTimezone: true }),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  },
-  (t) => [index("upload_tickets_expires_idx").on(t.expiresAt)],
-);

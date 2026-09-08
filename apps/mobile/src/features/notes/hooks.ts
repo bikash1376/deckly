@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { Note, GrammarCheck, EnhanceResult, Deck } from "@retenit/shared";
+import { Note, Deck } from "@retenit/shared";
 import { useApi } from "@/lib/use-api";
 import { deckKeys } from "@/features/decks/hooks";
 
@@ -61,31 +61,6 @@ export function useDeleteNote() {
   return useMutation({
     mutationFn: (id: string) => api.del(`/notes/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: noteKeys.all }),
-  });
-}
-
-/**
- * Grammar and clarity pass over a selection, or the whole note when nothing is
- * selected. Returns issues to accept or dismiss one at a time. Nothing is
- * applied automatically: silently rewriting a student's essay is how you lose
- * their trust in one tap.
- */
-export function useGrammarCheck() {
-  const api = useApi();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: { text: string }) => api.post("/notes/grammar", input, GrammarCheck),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me"] }),
-  });
-}
-
-/** Rewrite options for a selection. The user picks; we never pick for them. */
-export function useEnhance() {
-  const api = useApi();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: { text: string }) => api.post("/notes/enhance", input, EnhanceResult),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me"] }),
   });
 }
 

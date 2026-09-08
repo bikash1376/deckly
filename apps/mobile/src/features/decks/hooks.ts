@@ -4,7 +4,6 @@ import {
   Deck,
   DeckDetail,
   Card,
-  UploadTarget,
   WeakTopic,
   type CardKind,
   type CreateDeckInput,
@@ -90,12 +89,28 @@ export function useDeleteDeck() {
   });
 }
 
-/** Signed PUT straight to R2, so a 20MB PDF never travels through the Worker. */
-export function useUploadTarget() {
+/**
+ * Send a PDF as the request body and get a deck back.
+ *
+ * One request, no upload step. The Worker reads the text and discards the
+ * bytes, so nothing of the original document is kept anywhere.
+ */
+export function useCreateDeckFromPdf() {
   const api = useApi();
+  const qc = useQueryClient();
+
   return useMutation({
-    mutationFn: (input: { fileName: string; contentType: string; size: number }) =>
-      api.post("/uploads/sign", input, UploadTarget),
+    mutationFn: async (input: { uri: string; fileName: string }) => {
+      const blob = await (await fetch(input.uri)).blob();
+      return api.postBinary("/decks/pdf", blob, "application/pdf", Deck, {
+        "X-File-Name": input.fileName,
+      });
+    },
+    onSuccess: (deck) => {
+      qc.setQueryData(deckKeys.detail(deck.id), { deck, cards: [], outline: [] });
+      qc.invalidateQueries({ queryKey: deckKeys.list() });
+      qc.invalidateQueries({ queryKey: ["me"] });
+    },
   });
 }
 

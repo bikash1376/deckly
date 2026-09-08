@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Chip } from "@/components/ui/chip";
-import { useCreateDeck, useUploadTarget } from "@/features/decks/hooks";
+import { useCreateDeck, useCreateDeckFromPdf } from "@/features/decks/hooks";
 import { useMe } from "@/features/me/hooks";
 import { ApiError } from "@/lib/api";
 import { raw } from "@/theme";
@@ -26,30 +26,24 @@ export default function CreateDeckScreen() {
   const router = useRouter();
 
   const [text, setText] = useState("");
-  const [attachment, setAttachment] = useState<{
-    kind: Exclude<SourceKind, "topic" | "text">;
-    name: string;
-    key: string;
-  } | null>(null);
+  const [attachment, setAttachment] = useState<{ name: string; uri: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const { data: me } = useMe();
   const createDeck = useCreateDeck();
-  const signUpload = useUploadTarget();
+  const createFromPdf = useCreateDeckFromPdf();
 
   const cost = CREDIT_COST.seed;
   const credits = me?.entitlement.credits ?? 0;
   const affordable = credits >= cost;
 
-  const sourceKind: SourceKind = attachment
-    ? "pdf"
-    : text.trim().length > TEXT_THRESHOLD
-      ? "text"
-      : "topic";
+  const sourceKind: Exclude<SourceKind, "pdf"> =
+    text.trim().length > TEXT_THRESHOLD ? "text" : "topic";
 
+  const busy = createDeck.isPending || createFromPdf.isPending;
   const canSubmit = useMemo(
-    () => (attachment ? true : text.trim().length >= 3) && !createDeck.isPending,
-    [attachment, text, createDeck.isPending],
+    () => (attachment ? true : text.trim().length >= 3) && !busy,
+    [attachment, text, busy],
   );
 
   const pickPdf = useCallback(async () => {
@@ -66,28 +60,10 @@ export default function CreateDeckScreen() {
       return;
     }
 
-    try {
-      const target = await signUpload.mutateAsync({
-        fileName: file.name,
-        contentType: "application/pdf",
-        size: file.size ?? 0,
-      });
-
-      // Straight to R2. A 20MB body through the Worker would blow the request
-      // limit and cost us CPU time for no reason.
-      const blob = await (await fetch(file.uri)).blob();
-      const put = await fetch(target.uploadUrl, {
-        method: "PUT",
-        body: blob,
-        headers: { "Content-Type": "application/pdf" },
-      });
-      if (!put.ok) throw new Error("upload failed");
-
-      setAttachment({ kind: "pdf", name: file.name, key: target.key });
-    } catch {
-      setError("Could not upload that file. Check your connection and try again.");
-    }
-  }, [signUpload]);
+    // Nothing is sent yet. The file is sent as the body of the create request,
+    // read for its text, and never stored.
+    setAttachment({ name: file.name, uri: file.uri });
+  }, []);
 
   const pickPhoto = useCallback(async () => {
     setError(null);
@@ -104,11 +80,9 @@ export default function CreateDeckScreen() {
   const submit = useCallback(async () => {
     setError(null);
     try {
-      const deck = await createDeck.mutateAsync({
-        sourceKind,
-        source: attachment ? attachment.key : text.trim(),
-        fileName: attachment?.name,
-      });
+      const deck = attachment
+        ? await createFromPdf.mutateAsync({ uri: attachment.uri, fileName: attachment.name })
+        : await createDeck.mutateAsync({ sourceKind, source: text.trim() });
       router.replace(`/deck/${deck.id}`);
     } catch (caught) {
       if (caught instanceof ApiError && caught.isOutOfCredits) {
@@ -121,7 +95,7 @@ export default function CreateDeckScreen() {
           : "Could not create that deck. Try again in a moment.",
       );
     }
-  }, [createDeck, sourceKind, attachment, text, router]);
+  }, [createDeck, createFromPdf, sourceKind, attachment, text, router]);
 
   return (
     <KeyboardAvoidingView
@@ -156,7 +130,7 @@ export default function CreateDeckScreen() {
               <Text variant="subheading" numberOfLines={1}>
                 {attachment.name}
               </Text>
-              <Text variant="caption">Ready to turn into a deck</Text>
+              <Text variant="caption">Read on send, never stored</Text>
             </View>
             <IconButton
               icon={X}
@@ -185,7 +159,7 @@ export default function CreateDeckScreen() {
               Or start from
             </Text>
             <View className="flex-row gap-2.5">
-              <SourceTile icon={FilePdf} label="Upload PDF" onPress={pickPdf} busy={signUpload.isPending} />
+              <SourceTile icon={FilePdf} label="Choose PDF" onPress={pickPdf} />
               <SourceTile icon={Camera} label="Photo of notes" onPress={pickPhoto} />
             </View>
             <Text variant="caption" className="mt-3.5">
@@ -211,7 +185,7 @@ export default function CreateDeckScreen() {
         <Button
           label={affordable ? "Create deck" : "Get more credits"}
           icon={affordable ? Sparkle : undefined}
-          loading={createDeck.isPending}
+          loading={busy}
           disabled={!canSubmit && affordable}
           onPress={affordable ? submit : () => router.push("/paywall")}
         />

@@ -5,7 +5,7 @@ import { createDb, notes, decks } from "@/db";
 import { debit, refund, getBalance } from "@/lib/credits";
 import { assertWithinRateLimit } from "@/lib/rate-limit";
 import { errors } from "@/lib/errors";
-import { checkGrammar, enhanceText, generateSeed } from "@/ai/generate";
+import { generateSeed } from "@/ai/generate";
 import type { AppEnv } from "@/env";
 
 const route = new Hono<AppEnv>();
@@ -110,57 +110,6 @@ route.delete("/:id", async (c) => {
     .delete(notes)
     .where(and(eq(notes.id, c.req.param("id")), eq(notes.userId, c.get("userId"))));
   return c.body(null, 204);
-});
-
-/**
- * Grammar and enhance take raw text rather than a note id, because the app
- * sends whatever the user selected, which may be a fragment of one paragraph.
- */
-route.post("/grammar", async (c) => {
-  const db = createDb(c.env.DATABASE_URL);
-  const userId = c.get("userId");
-
-  const body = (await c.req.json().catch(() => null)) as { text?: string } | null;
-  const text = body?.text?.trim();
-  if (!text || text.length < 8) throw errors.invalid("Select a bit more text to check.");
-
-  await assertWithinRateLimit(db, userId);
-  await debit(db, userId, "grammar");
-
-  try {
-    const result = await checkGrammar(c.env, text);
-    // Do NOT clean the `original` field: it has to stay a byte for byte
-    // substring of the user's text or the app cannot locate it to replace it.
-    return c.json({
-      issues: result.issues.map((issue) => ({
-        ...issue,
-        suggestion: cleanDeep(issue.suggestion),
-        note: cleanDeep(issue.note),
-      })),
-    });
-  } catch (caught) {
-    await refund(db, userId, "grammar", "generation failed");
-    throw caught;
-  }
-});
-
-route.post("/enhance", async (c) => {
-  const db = createDb(c.env.DATABASE_URL);
-  const userId = c.get("userId");
-
-  const body = (await c.req.json().catch(() => null)) as { text?: string } | null;
-  const text = body?.text?.trim();
-  if (!text || text.length < 8) throw errors.invalid("Select a bit more text to rewrite.");
-
-  await assertWithinRateLimit(db, userId);
-  await debit(db, userId, "enhance");
-
-  try {
-    return c.json(cleanDeep(await enhanceText(c.env, text)));
-  } catch (caught) {
-    await refund(db, userId, "enhance", "generation failed");
-    throw caught;
-  }
 });
 
 /** The bridge between the two halves of the product. */

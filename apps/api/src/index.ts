@@ -8,7 +8,6 @@ import decksRoute from "@/routes/decks";
 import notesRoute from "@/routes/notes";
 import reviewRoute from "@/routes/review";
 import meRoute from "@/routes/me";
-import uploadsRoute from "@/routes/uploads";
 import billingRoute from "@/routes/billing";
 import type { AppEnv } from "@/env";
 
@@ -66,14 +65,12 @@ app.use("/decks", requireAuth);
 app.use("/notes/*", requireAuth);
 app.use("/notes", requireAuth);
 app.use("/review/*", requireAuth);
-app.use("/uploads/*", requireAuth);
 app.use("/report", requireAuth);
 
 app.route("/me", meRoute);
 app.route("/decks", decksRoute);
 app.route("/notes", notesRoute);
 app.route("/review", reviewRoute);
-app.route("/uploads", uploadsRoute);
 
 /**
  * Report generated content.

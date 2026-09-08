@@ -108,6 +108,49 @@ export function createApi(getToken: TokenGetter) {
       request<T>(getToken, path, { method: "PATCH", body, schema }),
 
     del: (path: string) => request<void>(getToken, path, { method: "DELETE" }),
+
+    /**
+     * Raw bytes rather than JSON, for the PDF path.
+     *
+     * The file goes straight into the request body and is never stored server
+     * side, so there is no upload step, no object storage and no key to track.
+     */
+    postBinary: async <T>(
+      path: string,
+      body: ArrayBuffer | Blob,
+      contentType: string,
+      schema?: ZodType<T>,
+      headers?: Record<string, string>,
+    ): Promise<T> => {
+      const token = await getToken();
+      const response = await fetch(`${env.apiUrl}${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": contentType,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...headers,
+        },
+        body,
+      });
+
+      const text = await response.text();
+      const payload = text ? safeJson(text) : null;
+
+      if (!response.ok) {
+        const code = (payload as { code?: string } | null)?.code ?? "unknown";
+        const message =
+          (payload as { message?: string } | null)?.message ??
+          "Something went wrong. Check your connection and try again.";
+        throw new ApiError(response.status, code, message);
+      }
+
+      if (!schema) return payload as T;
+      const parsed = schema.safeParse(payload);
+      if (!parsed.success) {
+        throw new ApiError(response.status, "bad_response", "The server sent something this version of the app cannot read.");
+      }
+      return cleanDeep(parsed.data);
+    },
   };
 }
 

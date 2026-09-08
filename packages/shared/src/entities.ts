@@ -83,14 +83,6 @@ export const Me = z.object({
 });
 export type Me = z.infer<typeof Me>;
 
-/** Signed direct-to-R2 upload, so PDFs never pass through the Worker body. */
-export const UploadTarget = z.object({
-  uploadUrl: z.string(),
-  key: z.string(),
-  expiresIn: z.number().int(),
-});
-export type UploadTarget = z.infer<typeof UploadTarget>;
-
 export const WeakTopic = z.object({
   concept: z.string(),
   wrong: z.number().int(),

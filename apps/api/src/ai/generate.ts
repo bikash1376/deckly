@@ -9,8 +9,6 @@ import {
   CheatSheet,
   Eli5,
   ExamQuestions,
-  GrammarCheck,
-  EnhanceResult,
   type CardKind,
 } from "@retenit/shared";
 import { createModel, clampSource } from "./client";
@@ -133,24 +131,4 @@ export async function answerQuestion(env: Bindings, source: string, question: st
     console.error("chat failed", String(caught));
     throw errors.generationFailed();
   }
-}
-
-export async function checkGrammar(env: Bindings, text: string) {
-  return run(
-    env,
-    "fast",
-    SYSTEM.grammar,
-    `Check this text:\n---\n${clampSource(text, 8_000)}\n---`,
-    GrammarCheck,
-  );
-}
-
-export async function enhanceText(env: Bindings, text: string) {
-  return run(
-    env,
-    "quality",
-    SYSTEM.enhance,
-    `Rewrite this passage:\n---\n${clampSource(text, 4_000)}\n---`,
-    EnhanceResult,
-  );
 }

@@ -8,7 +8,7 @@ import {
   DECK_COLORS,
   type DeckColor,
 } from "@retenit/shared";
-import { createDb, decks, cards, reviews, uploadTickets, quizAttempts } from "@/db";
+import { createDb, decks, cards, reviews, quizAttempts } from "@/db";
 import { debit, refund } from "@/lib/credits";
 import { assertWithinRateLimit } from "@/lib/rate-limit";
 import { errors } from "@/lib/errors";
@@ -17,6 +17,8 @@ import { extractPdf } from "@/ai/pdf";
 import type { AppEnv } from "@/env";
 
 const route = new Hono<AppEnv>();
+
+const MAX_PDF_BYTES = 20 * 1024 * 1024;
 
 /** Deterministic from the id, so app and server always agree on the colour. */
 function colorFor(id: string): DeckColor {
@@ -75,27 +77,10 @@ route.post("/", async (c) => {
   if (!parsed.success) throw errors.invalid("That request was not something we could read.");
 
   const input = parsed.data;
-
-  // Resolve the source to text BEFORE spending anything. A PDF that turns out
-  // to be a scan should cost nothing.
-  let sourceText: string;
   if (input.sourceKind === "pdf") {
-    const ticket = await db
-      .select()
-      .from(uploadTickets)
-      .where(and(eq(uploadTickets.key, input.source), eq(uploadTickets.userId, userId)))
-      .limit(1);
-
-    if (!ticket[0]?.consumedAt) throw errors.invalid("That upload could not be found.");
-
-    const object = await c.env.UPLOADS.get(input.source);
-    if (!object) throw errors.invalid("That upload has expired. Try uploading it again.");
-
-    const extracted = await extractPdf(await object.arrayBuffer());
-    sourceText = extracted.text;
-  } else {
-    sourceText = input.source;
+    throw errors.invalid("Send a PDF to /decks/pdf instead.");
   }
+  const sourceText = input.source;
 
   // Debit first, refund on failure. The other order lets a client cancel
   // mid-request and keep the output for free.
@@ -122,9 +107,92 @@ route.post("/", async (c) => {
       subject: clean.subject,
       color: colorFor(id),
       sourceKind: input.sourceKind,
-      sourceRef: input.sourceKind === "pdf" ? input.source : "",
+      sourceRef: "",
       sourceText,
       fileName: input.fileName ?? null,
+      tldr: clean.tldr,
+      outline: clean.outline,
+      estimatedMinutes: clean.estimatedMinutes,
+    })
+    .returning();
+
+  const deck = inserted[0]!;
+
+  return c.json({
+    id: deck.id,
+    title: deck.title,
+    subject: deck.subject,
+    color: deck.color,
+    sourceKind: deck.sourceKind,
+    tldr: deck.tldr,
+    estimatedMinutes: deck.estimatedMinutes,
+    cardsDone: 0,
+    cardsTotal: 0,
+    createdAt: deck.createdAt.toISOString(),
+  });
+});
+
+/**
+ * Create a deck from a PDF.
+ *
+ * The file arrives as the raw request body and is never stored. Text is
+ * extracted, the deck is built from it, and the bytes are discarded when the
+ * request ends. There is no object storage in this system at all: keeping a
+ * student's coursework indefinitely is a liability with no product benefit,
+ * since the deck is the artefact and the PDF is only how it got here.
+ *
+ * A separate route from POST /decks because the body is binary, not JSON.
+ */
+route.post("/pdf", async (c) => {
+  const db = createDb(c.env.DATABASE_URL);
+  const userId = c.get("userId");
+
+  const fileName = c.req.header("X-File-Name") ?? null;
+
+  const bytes = await c.req.arrayBuffer();
+  if (bytes.byteLength === 0) throw errors.invalid("That file was empty.");
+  if (bytes.byteLength > MAX_PDF_BYTES) {
+    throw errors.invalid("That PDF is over 20 MB. Try a shorter section.");
+  }
+
+  // Check the magic number rather than trusting a header the client set.
+  const header = new Uint8Array(bytes.slice(0, 5));
+  if (!(header[0] === 0x25 && header[1] === 0x50 && header[2] === 0x44 && header[3] === 0x46)) {
+    throw errors.invalid("That file is not a PDF.");
+  }
+
+  // Extract BEFORE spending anything. A PDF that turns out to be a scan, or is
+  // password protected, should cost the user nothing.
+  const extracted = await extractPdf(bytes);
+
+  await assertWithinRateLimit(db, userId);
+  await debit(db, userId, "seed", { sourceKind: "pdf", pages: extracted.pages });
+
+  let seed;
+  try {
+    seed = await generateSeed(c.env, extracted.text);
+  } catch (caught) {
+    await refund(db, userId, "seed", "generation failed");
+    throw caught;
+  }
+
+  const clean = cleanDeep(seed.object);
+  const id = crypto.randomUUID();
+
+  const inserted = await db
+    .insert(decks)
+    .values({
+      id,
+      userId,
+      title: clean.title,
+      subject: clean.subject,
+      color: colorFor(id),
+      sourceKind: "pdf",
+      sourceRef: "",
+      // The extracted text is kept so regenerating a card later does not need
+      // the original file, which by then is long gone.
+      sourceText: extracted.text,
+      fileName,
       tldr: clean.tldr,
       outline: clean.outline,
       estimatedMinutes: clean.estimatedMinutes,

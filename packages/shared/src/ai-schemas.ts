@@ -95,27 +95,3 @@ export const ExamQuestions = z.object({
   ).min(3).max(10),
 });
 export type ExamQuestions = z.infer<typeof ExamQuestions>;
-
-/** Writing-pad actions. */
-export const GrammarCheck = z.object({
-  issues: z.array(
-    z.object({
-      original: z.string().describe("Exact substring from the input, verbatim"),
-      suggestion: z.string(),
-      kind: z.enum(["grammar", "spelling", "punctuation", "clarity"]),
-      note: z.string().describe("Under 12 words"),
-    }),
-  ),
-});
-export type GrammarCheck = z.infer<typeof GrammarCheck>;
-
-export const EnhanceResult = z.object({
-  /** Multiple options so the user picks — never silently overwrite their voice. */
-  options: z.array(
-    z.object({
-      label: z.enum(["tighter", "clearer", "more formal", "more natural"]),
-      text: z.string(),
-    }),
-  ).min(2).max(4),
-});
-export type EnhanceResult = z.infer<typeof EnhanceResult>;

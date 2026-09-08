@@ -41,7 +41,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] `TabBar` — floating pill, expanding active tab, regular-to-fill icon
 - [x] `usePressScale` — the shared spring + haptic press feel
 - [x] `Button` gained an `inverse` variant for deck-coloured grounds
-- [ ] `Sheet` — bottom sheet wrapper
+- [x] `Sheet` + `SheetRow` — bottom sheet wrapper
 - [ ] `DeckStack` — layered deck hero from `s1`
 
 ## 2. Auth (Clerk)
@@ -69,7 +69,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Neon + Drizzle schema, 11 tables, exercised end to end
 - [x] Migrations wired and **applied to Neon** (11 tables)
 - [x] Credit ledger, atomic debit verified to refuse when short
-- [x] R2 binding + single-use upload tickets (bucket still needs creating)
+- [x] **No object storage.** PDFs are sent as the request body, read for text, discarded
 - [x] Quiz attempts recorded, weak topics aggregated across every attempt
 - [x] Rate limiting per user, counted off the ledger
 - [x] Error taxonomy with app-actionable codes
@@ -127,11 +127,12 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Streaks surfaced on Decks, Review and Profile
 - [x] Deck chat screen
 
-## 7. Writing pad (minimal)
+## 7. Writing pad (no AI)
 
 - [x] Notes list screen with free-tier counter
-- [x] Editor with autosave and selection tracking
-- [x] Selection actions: Grammar check and Enhance, options never auto-applied
+- [x] Editor with autosave, inline issue underlines and tap-to-fix
+- [x] Typography settings sheet: 6 typefaces, size, weight, line height, tracking
+- [x] Grammar check off the AI path (LanguageTool protocol), off by default
 - [ ] Inline grammar issue highlighting + accept/dismiss
 - [x] Turn this note into a deck
 - [x] Debounced autosave

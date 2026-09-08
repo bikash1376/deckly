@@ -44,8 +44,6 @@ export const CREDIT_COST: Record<string, number> = {
   eli5: 2,
   exam_questions: 4,
   deck_chat: 1,
-  grammar: 1,
-  enhance: 2,
 };
 
 export const SOURCE_KINDS = ["topic", "text", "pdf"] as const;

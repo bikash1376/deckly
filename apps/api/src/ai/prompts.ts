@@ -10,7 +10,7 @@ import type { CardKind } from "@retenit/shared";
  * Bump the version whenever the text changes in a way that changes output.
  */
 
-export const PROMPT_VERSION: Record<CardKind | "chat" | "grammar" | "enhance", string> = {
+export const PROMPT_VERSION: Record<CardKind | "chat", string> = {
   seed: "seed@1",
   summary: "summary@1",
   key_concepts: "concepts@1",
@@ -20,8 +20,6 @@ export const PROMPT_VERSION: Record<CardKind | "chat" | "grammar" | "enhance", s
   eli5: "eli5@1",
   exam_questions: "exam@1",
   chat: "chat@1",
-  grammar: "grammar@1",
-  enhance: "enhance@1",
 };
 
 /**
@@ -65,10 +63,6 @@ export const SYSTEM = {
   exam_questions: `You write exam questions in the style of a real paper, with mark allocations and model answers. A model answer should show what earns the marks, not just state the fact. ${GROUNDING} ${HOUSE_STYLE}`,
 
   chat: `You answer questions about one specific piece of study material. ${GROUNDING} If the answer is genuinely not in the source, say so plainly and say what the source does cover instead. Keep answers to a few sentences unless asked to go deeper. ${HOUSE_STYLE}`,
-
-  grammar: `You find grammar, spelling, punctuation and clarity problems in a student's own writing. Report only real errors, never stylistic preferences. The "original" field must be an exact substring of the input, copied character for character, so it can be located and replaced. Keep notes under twelve words. If the writing is clean, return an empty list rather than inventing problems. ${HOUSE_STYLE}`,
-
-  enhance: `You offer rewrites of a passage a student wrote. Preserve their argument, their evidence and their voice: you are tightening their sentence, not writing your own. Offer distinct options, not four versions of the same edit. Never make it longer unless asked. ${HOUSE_STYLE}`,
 } as const;
 
 /** The user turn for a generation, wrapping whatever source we have. */

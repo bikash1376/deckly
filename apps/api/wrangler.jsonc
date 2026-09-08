@@ -9,13 +9,6 @@
 
   "observability": { "enabled": true },
 
-  "r2_buckets": [
-    {
-      "binding": "UPLOADS",
-      "bucket_name": "retenit-uploads",
-      "preview_bucket_name": "retenit-uploads-preview"
-    }
-  ],
 
   // Model choice is not only about price. On Groq, strict structured outputs
   // (constrained decoding against a JSON schema) are supported on the GPT-OSS
@@ -40,13 +33,7 @@
         "ENVIRONMENT": "production",
         "MODEL_FAST": "openai/gpt-oss-20b",
         "MODEL_QUALITY": "openai/gpt-oss-120b"
-      },
-      "r2_buckets": [
-        {
-          "binding": "UPLOADS",
-          "bucket_name": "retenit-uploads"
-        }
-      ]
+      }
     }
   }
 }
