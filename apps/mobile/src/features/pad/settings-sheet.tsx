@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, Switch, View } from "react-native";
+import { Cards } from "phosphor-react-native";
 import { Text } from "@/components/ui/text";
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetRow } from "@/components/ui/sheet";
 import { cn } from "@/lib/cn";
 import { raw } from "@/theme";
@@ -22,9 +24,16 @@ import { isGrammarConfigured } from "./grammar";
 export function PadSettingsSheet({
   visible,
   onClose,
+  onMakeDeck,
+  canMakeDeck = false,
+  makingDeck = false,
 }: {
   visible: boolean;
   onClose: () => void;
+  /** Turn this note into a deck. Absent on a note too short to be worth it. */
+  onMakeDeck?: () => void;
+  canMakeDeck?: boolean;
+  makingDeck?: boolean;
 }) {
   const t = useTypography();
   const grammarAvailable = isGrammarConfigured();
@@ -140,6 +149,29 @@ export function PadSettingsSheet({
             />
           </View>
         </SheetRow>
+
+        {onMakeDeck ? (
+          <SheetRow
+            label="This note"
+            hint={
+              canMakeDeck
+                ? "Makes flashcards and a quiz from what you have written."
+                : "Write a little more and you can turn this into a deck."
+            }
+          >
+            <Button
+              label={makingDeck ? "Making a deck" : "Turn into a deck"}
+              variant="secondary"
+              size="md"
+              icon={Cards}
+              disabled={!canMakeDeck || makingDeck}
+              onPress={() => {
+                onClose();
+                onMakeDeck();
+              }}
+            />
+          </SheetRow>
+        ) : null}
 
         <Pressable
           accessibilityRole="button"

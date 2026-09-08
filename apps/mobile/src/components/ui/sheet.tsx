@@ -1,6 +1,15 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "@/lib/cn";
 import { shadow } from "@/theme";
@@ -9,11 +18,10 @@ import { Text } from "./text";
 /**
  * Bottom sheet built on the platform Modal.
  *
- * No gesture library and no drag-to-dismiss. A sheet that can be dragged has to
- * fight every scrollable thing inside it for the same vertical gesture, and the
- * sheets in this app hold controls rather than long content. Tapping the
- * backdrop and the system back button both close it, which is what people
- * actually reach for on Android.
+ * Drag the handle down to dismiss, tap the backdrop, or press system back.
+ * The drag is bound to the handle area rather than the whole sheet, because a
+ * pan on the body would fight every scroll view inside it for the same vertical
+ * gesture, and losing that fight makes a list feel sticky.
  */
 export interface SheetProps {
   visible: boolean;
@@ -22,6 +30,10 @@ export interface SheetProps {
   children: ReactNode;
   className?: string;
 }
+
+/** Past this, releasing dismisses rather than springing back. */
+const DISMISS_DISTANCE = 90;
+const DISMISS_VELOCITY = 800;
 
 export function Sheet({ visible, onClose, title, children, className }: SheetProps) {
   const insets = useSafeAreaInsets();
@@ -32,11 +44,39 @@ export function Sheet({ visible, onClose, title, children, className }: SheetPro
   // scroll area off the bottom, which reads as "it will not scroll".
   const maxHeight = height * 0.85;
 
+  const translateY = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) translateY.value = 0;
+  }, [visible, translateY]);
+
+  const drag = Gesture.Pan()
+    .onChange((event) => {
+      // Downwards only. Dragging up should not lift the sheet off its edge.
+      translateY.value = Math.max(0, translateY.value + event.changeY);
+    })
+    .onEnd((event) => {
+      const shouldClose =
+        translateY.value > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
+
+      if (shouldClose) {
+        translateY.value = withTiming(height, { duration: 180 }, (finished) => {
+          if (finished) runOnJS(onClose)();
+        });
+      } else {
+        translateY.value = withSpring(0, { damping: 20, stiffness: 260 });
+      }
+    });
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="none"
+      animationType="slide"
       statusBarTranslucent
       onRequestClose={onClose}
     >
@@ -55,12 +95,17 @@ export function Sheet({ visible, onClose, title, children, className }: SheetPro
         </Animated.View>
 
         <Animated.View
-          entering={SlideInDown.duration(240)}
-          exiting={SlideOutDown.duration(180)}
-          style={[shadow.floating, { paddingBottom: insets.bottom + 20, maxHeight }]}
+          style={[sheetStyle, shadow.floating, { paddingBottom: insets.bottom + 20, maxHeight }]}
           className={cn("rounded-t-sheet bg-bg px-gutter pt-3", className)}
         >
-          <View className="mb-4 h-1 w-9 self-center rounded-pill bg-hairline" />
+          <GestureDetector gesture={drag}>
+            {/* Padded well beyond the visible bar so the grab area is a real
+                target rather than a 4pt line. */}
+            <View className="-mx-gutter items-center px-gutter pb-3 pt-1">
+              <View className="h-1 w-9 rounded-pill bg-hairline" />
+            </View>
+          </GestureDetector>
+
           {title ? (
             <Text variant="heading" className="mb-4">
               {title}

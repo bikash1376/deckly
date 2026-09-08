@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { ArrowLeft, TextAa, Cards as CardsIcon, X } from "phosphor-react-native";
+import { ArrowLeft, TextAa, MagnifyingGlass, X } from "phosphor-react-native";
 import type { GrammarIssue } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
@@ -37,8 +38,8 @@ export default function NoteEditorScreen() {
   const [noteId, setNoteId] = useState(isNew ? null : id);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [saved, setSaved] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
   const [activeIssue, setActiveIssue] = useState<GrammarIssue | null>(null);
 
   const createNote = useCreateNote();
@@ -78,13 +79,12 @@ export default function NoteEditorScreen() {
         } else {
           await saveNote.mutateAsync({ title: nextTitle, body: nextBody });
         }
-        setSaved("Saved just now");
       } catch (caught) {
         if (caught instanceof ApiError && caught.isOutOfCredits) {
           router.push("/paywall");
-          return;
         }
-        setSaved("Not saved. Check your connection.");
+        // Otherwise stay quiet. The next keystroke schedules another attempt,
+        // and a banner about a failed save helps nobody mid-sentence.
       }
     },
     [noteId, createNote, saveNote, router],
@@ -92,7 +92,6 @@ export default function NoteEditorScreen() {
 
   const scheduleSave = useCallback(
     (nextTitle: string, nextBody: string) => {
-      setSaved(null);
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => persist(nextTitle, nextBody), AUTOSAVE_MS);
     },
@@ -127,6 +126,27 @@ export default function NoteEditorScreen() {
     }
   }, [noteId, toDeck, router]);
 
+  const selected = body.slice(selection.start, selection.end).trim();
+  const hasSelection = selected.length > 1;
+
+  /**
+   * Search the selected text.
+   *
+   * Opens an in-app browser tab rather than rendering results in a sheet.
+   * Google's results cannot legitimately be embedded or scraped, and a real
+   * search API is a paid key. A Custom Tab is free, allowed, and still feels
+   * in-app: it slides over, and back returns you to the exact cursor position.
+   */
+  const lookUp = useCallback(async () => {
+    if (!hasSelection) return;
+    const query = encodeURIComponent(selected.slice(0, 200));
+    await WebBrowser.openBrowserAsync(`https://www.google.com/search?q=${query}`, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+      toolbarColor: raw.bg,
+      controlsColor: raw.clay,
+    }).catch(() => {});
+  }, [hasSelection, selected]);
+
   const showSegments = typography.grammarEnabled && issues.length > 0;
   const segments = useMemo(
     () => (showSegments ? segment(body, issues) : []),
@@ -152,18 +172,15 @@ export default function NoteEditorScreen() {
             router.back();
           }}
         />
-        <Text variant="caption">
-          {checking
-            ? "Checking"
-            : (saved ?? (createNote.isPending || saveNote.isPending ? "Saving" : "Not saved yet"))}
-        </Text>
         <View className="flex-row">
+          {/* Enabled by a selection. Looking a word up is the one thing people
+              leave a writing app for, so it belongs in the app. */}
           <IconButton
-            icon={CardsIcon}
+            icon={MagnifyingGlass}
             tone="bare"
-            accessibilityLabel="Turn this note into a deck"
-            disabled={!noteId || toDeck.isPending || body.trim().length < 40}
-            onPress={makeDeck}
+            accessibilityLabel="Look up the selected text"
+            disabled={!hasSelection}
+            onPress={lookUp}
           />
           <IconButton
             icon={TextAa}
@@ -210,6 +227,7 @@ export default function NoteEditorScreen() {
           multiline
           autoFocus={isNew}
           onChangeText={changeBody}
+          onSelectionChange={(event) => setSelection(event.nativeEvent.selection)}
           placeholder="Start writing."
           placeholderTextColor={raw.inkFaint}
           selectionColor={raw.clay}
@@ -317,7 +335,13 @@ export default function NoteEditorScreen() {
         </Animated.View>
       ) : null}
 
-      <PadSettingsSheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <PadSettingsSheet
+        visible={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onMakeDeck={makeDeck}
+        canMakeDeck={!!noteId && body.trim().length >= 40}
+        makingDeck={toDeck.isPending}
+      />
     </KeyboardAvoidingView>
   );
 }
