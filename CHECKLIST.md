@@ -159,6 +159,14 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] EAS build profiles (dev / preview / production AAB)
 - [ ] Target API level check
 
+## 9b. Build verification
+
+- [x] Worker bundles clean (`wrangler deploy --dry-run`), 1.03 MB gzipped
+- [x] App bundles clean (`expo export --platform android`)
+- [x] Uniwind transform confirmed running (generates `src/uniwind-types.d.ts`)
+- [x] Font bundle trimmed from 18 faces to 5, export 26 MB down to 16 MB
+- [ ] Run on a real device (needs envs + a dev build)
+
 ## 10. Polish
 
 - [x] Haptics on key interactions

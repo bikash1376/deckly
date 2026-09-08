@@ -9,13 +9,21 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { ClerkProvider } from "@clerk/clerk-expo";
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-} from "@expo-google-fonts/inter";
-import { InterTight_600SemiBold, InterTight_700Bold } from "@expo-google-fonts/inter-tight";
+import { useFonts } from "expo-font";
+
+/**
+ * Imported from the per weight subpaths, not the package root.
+ *
+ * `@expo-google-fonts/inter` re-exports every weight and every italic from its
+ * index, so importing from the root pulls all eighteen faces into the bundle at
+ * roughly 340 KB each. Two families that way is about 6 MB of fonts to ship
+ * five of them. These paths reach the ttf directly.
+ */
+import Inter_400Regular from "@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf";
+import Inter_500Medium from "@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf";
+import Inter_600SemiBold from "@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf";
+import InterTight_600SemiBold from "@expo-google-fonts/inter-tight/600SemiBold/InterTight_600SemiBold.ttf";
+import InterTight_700Bold from "@expo-google-fonts/inter-tight/700Bold/InterTight_700Bold.ttf";
 
 import { tokenCache } from "@/lib/token-cache";
 import { env } from "@/lib/env";
