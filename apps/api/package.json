@@ -1,5 +1,5 @@
 {
-  "name": "@deckly/api",
+  "name": "@retenit/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
   "dependencies": {
     "@ai-sdk/groq": "^4.0.37",
     "@clerk/backend": "^3.17.1",
-    "@deckly/shared": "workspace:*",
+    "@retenit/shared": "workspace:*",
     "@neondatabase/serverless": "^1.1.0",
     "ai": "^7.0.93",
     "drizzle-orm": "^0.45.2",

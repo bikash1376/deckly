@@ -12,7 +12,7 @@ import {
   GrammarCheck,
   EnhanceResult,
   type CardKind,
-} from "@deckly/shared";
+} from "@retenit/shared";
 import { createModel, clampSource } from "./client";
 import { SYSTEM, PROMPT_VERSION, sourcePrompt } from "./prompts";
 import { errors } from "@/lib/errors";
@@ -67,10 +67,21 @@ async function run<T>(
     });
     return object;
   } catch (caught) {
-    // Includes schema validation failures, which is the common case: the model
-    // returned JSON that does not fit. That is a generation failure, not a bug
-    // the user should see a stack trace for.
-    console.error("generation failed", { tier, error: String(caught) });
+    // A 429 from Groq is not the user's fault and not a broken generation. The
+    // free tier allows 8k tokens per minute across the entire account, so this
+    // will happen with even a handful of concurrent testers. Surfacing it as
+    // rate limited gets the credits refunded and tells the user to wait, rather
+    // than telling them the model failed.
+    const message = String(caught);
+    if (message.includes("429") || /rate.?limit/i.test(message)) {
+      console.warn("upstream rate limited", { tier });
+      throw errors.rateLimited();
+    }
+
+    // Otherwise: includes schema validation failures, which is the common case
+    // when the model returns JSON that does not fit. A generation failure, not
+    // a bug the user should see a stack trace for.
+    console.error("generation failed", { tier, error: message });
     throw errors.generationFailed();
   }
 }

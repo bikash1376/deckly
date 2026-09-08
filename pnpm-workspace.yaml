@@ -2,7 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# One zod for the whole workspace. @deckly/shared exports schemas that both the
+# One zod for the whole workspace. @retenit/shared exports schemas that both the
 # app and the Worker import, and zod instances do not interoperate across major
 # versions: a schema built by zod 3 fails an instanceof check inside zod 4.
 # The AI SDK accepts ^3.25.76, so v3 satisfies every consumer.
@@ -16,5 +16,10 @@ onlyBuiltDependencies:
   - workerd
 
 allowBuilds:
+  '@clerk/shared': set this to true or false
+  browser-tabs-lock: set this to true or false
+  bufferutil: set this to true or false
+  core-js: set this to true or false
   esbuild: set this to true or false
+  utf-8-validate: set this to true or false
   workerd: set this to true or false

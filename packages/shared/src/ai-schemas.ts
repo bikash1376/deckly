@@ -36,7 +36,9 @@ export const KeyConcepts = z.object({
     z.object({
       term: z.string(),
       definition: z.string().describe("One sentence, plain language"),
-      whyItMatters: z.string().optional(),
+      // Nullable, not optional: Groq strict mode requires every field to be
+      // present, so absence is expressed as null rather than omission.
+      whyItMatters: z.string().nullable(),
     }),
   ).min(3).max(20),
 });
@@ -47,7 +49,7 @@ export const Flashcards = z.object({
     z.object({
       front: z.string().describe("A question, never a bare term"),
       back: z.string().describe("Answer in under 25 words"),
-      hint: z.string().optional(),
+      hint: z.string().nullable(),
     }),
   ).min(5).max(40),
 });

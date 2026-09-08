@@ -1,7 +1,7 @@
 /**
  * Copy rules for anything a user reads.
  *
- * Deckly never shows em dashes, en dashes or emoji. That applies to hand written
+ * Retenit never shows em dashes, en dashes or emoji. That applies to hand written
  * UI strings AND to model output, which is the harder half: models produce em
  * dashes constantly and routinely ignore a prompt telling them not to. So the
  * prompt asks, and this sanitiser enforces.

@@ -2,7 +2,7 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { NotePencil, Plus, Lock } from "phosphor-react-native";
-import type { Note } from "@deckly/shared";
+import type { Note } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { PressableCard } from "@/components/ui/card";

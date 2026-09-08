@@ -3,7 +3,7 @@ import { FlatList, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ArrowLeft, MagnifyingGlass } from "phosphor-react-native";
-import type { Deck, Note } from "@deckly/shared";
+import type { Deck, Note } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { PressableCard } from "@/components/ui/card";

@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { X, Check, Flag, Cards as CardsIcon } from "phosphor-react-native";
-import { Quiz as QuizSchema } from "@deckly/shared";
+import { Quiz as QuizSchema } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

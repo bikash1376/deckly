@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { Note, GrammarCheck, EnhanceResult, Deck } from "@deckly/shared";
+import { Note, GrammarCheck, EnhanceResult, Deck } from "@retenit/shared";
 import { useApi } from "@/lib/use-api";
 import { deckKeys } from "@/features/decks/hooks";
 

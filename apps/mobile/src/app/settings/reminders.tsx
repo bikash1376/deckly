@@ -46,7 +46,7 @@ export default function RemindersScreen() {
       const granted = await requestPermission();
       if (!granted) {
         setError(
-          "Notifications are off for Deckly. Turn them on in Android settings to get reminders.",
+          "Notifications are off for Retenit. Turn them on in Android settings to get reminders.",
         );
         return;
       }

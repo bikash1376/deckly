@@ -21,7 +21,7 @@ import { prefetchOcrModel } from "@/features/ocr";
 import { cn } from "@/lib/cn";
 import { raw, shadow } from "@/theme";
 
-export const ONBOARDING_KEY = "deckly.onboarded.v1";
+export const ONBOARDING_KEY = "retenit.onboarded.v1";
 
 const { width } = Dimensions.get("window");
 

@@ -1,4 +1,4 @@
-# Deckly — Build Checklist
+# Retenit — Build Checklist
 
 AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono on Cloudflare Workers · Neon Postgres · R2.
 
@@ -9,7 +9,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 ## 0. Foundations
 
 - [x] Initialize git repo + pnpm workspace (`apps/*`, `packages/*`)
-- [x] Add GitHub remote `bikash1376/deckly`
+- [x] Add GitHub remote `bikash1376/retenit`
 - [x] `.gitignore` hardened (no `node_modules`, `.env`, `.dev.vars`, `android/`, `ios/`)
 - [x] Scaffold Expo app (SDK 57, RN 0.86, expo-router, TypeScript)
 - [x] `packages/shared` — Zod schemas shared between app and Worker
@@ -19,11 +19,11 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Uniwind + Tailwind v4 wired (`metro.config.js`, `src/global.css`)
 - [x] Design system as `@theme` tokens — colours, type scale, radii, gutter
 - [x] `SPEC.md` — stack, architecture, data model, conventions
-- [x] Push to `bikash1376/deckly`
+- [x] Push to `bikash1376/retenit`
 - [x] Load Inter / Inter Tight via `expo-font`
 - [ ] Init `react-native-reusables` and pull the primitives
 - [x] `.env.example` for the app, `.dev.vars.example` for the Worker
-- [ ] Rename project dir to `deckly` (space in path breaks local Gradle builds)
+- [ ] Rename project dir to `retenit` (space in path breaks local Gradle builds)
 
 ## 1. Design system (components)
 
@@ -56,7 +56,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 
 - [x] Typed API client with Zod response parsing (`src/lib/api.ts`)
 - [x] `useApi` bound to the live Clerk token
-- [x] Wire entity schemas in `@deckly/shared` (Deck, Card, Note, ReviewCard, Me)
+- [x] Wire entity schemas in `@retenit/shared` (Deck, Card, Note, ReviewCard, Me)
 - [x] TanStack Query hooks: decks, review, notes, me
 - [x] SM-2 lite scheduler mirrored client side (`src/lib/srs.ts`)
 - [x] `cleanCopy` / `cleanDeep` applied to every parsed response
@@ -155,7 +155,7 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [ ] Account deletion URL (public, outside the app)
 - [x] **In-app Report affordance** on generated cards, flashcards and quiz questions
 - [ ] App icon, adaptive icon, feature graphic, screenshots
-- [ ] Store listing copy + ASO title: `Deckly — AI Study Decks`
+- [ ] Store listing copy + ASO title: `Retenit — AI Study Decks`
 - [x] EAS build profiles (dev / preview / production AAB)
 - [ ] Target API level check
 

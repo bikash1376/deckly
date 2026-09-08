@@ -19,7 +19,7 @@ const { withAppBuildGradle } = require("expo/config-plugins");
  * The unbundled artifact exposes the identical classes, including
  * `com.google.mlkit.vision.text.latin.TextRecognizerOptions`, so the wrapper's
  * Java needs no change. The model is downloaded once by Play Services on first
- * use instead of shipping inside the binary. Deckly is Android only and Play
+ * use instead of shipping inside the binary. Retenit is Android only and Play
  * Store only, so Play Services is always present.
  *
  * The cost is that the very first scan can need a moment while the model
@@ -41,7 +41,7 @@ const BUNDLED_MODULES = [
 
 const UNBUNDLED = "com.google.android.gms:play-services-mlkit-text-recognition:19.0.1";
 
-const MARKER = "// deckly: unbundled ML Kit";
+const MARKER = "// retenit: unbundled ML Kit";
 
 function buildBlock() {
   // `exclude` is a method on Configuration itself, not on resolutionStrategy.

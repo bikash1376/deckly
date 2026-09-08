@@ -44,7 +44,7 @@ export async function extractPdf(bytes: ArrayBuffer): Promise<ExtractedPdf> {
   // produce a confident deck about nothing. Catch it here and say so.
   if (cleaned.length < 200) {
     throw errors.invalid(
-      "There is almost no readable text in that PDF. If it is a scan, photograph the pages instead and Deckly will read them.",
+      "There is almost no readable text in that PDF. If it is a scan, photograph the pages instead and Retenit will read them.",
     );
   }
 

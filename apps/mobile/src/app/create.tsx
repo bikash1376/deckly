@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { X, FilePdf, Camera, Sparkle } from "phosphor-react-native";
-import { CREDIT_COST, type SourceKind } from "@deckly/shared";
+import { CREDIT_COST, type SourceKind } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

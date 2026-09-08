@@ -1,5 +1,5 @@
 /**
- * The SM-2 scheduler lives in @deckly/shared so the app's predicted intervals
+ * The SM-2 scheduler lives in @retenit/shared so the app's predicted intervals
  * and the server's written ones come from one implementation. Re-exported here
  * so app code keeps importing from `@/lib/srs`.
  */
@@ -9,4 +9,4 @@ export {
   previewGrades,
   INITIAL_SRS,
   type SrsState,
-} from "@deckly/shared";
+} from "@retenit/shared";

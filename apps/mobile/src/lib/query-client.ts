@@ -26,7 +26,7 @@ export const queryClient = new QueryClient({
  */
 export const persister = createAsyncStoragePersister({
   storage: AsyncStorage,
-  key: "deckly.query-cache.v1",
+  key: "retenit.query-cache.v1",
   throttleTime: 2_000,
 });
 

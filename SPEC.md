@@ -1,4 +1,4 @@
-# Deckly — Technical Spec
+# Retenit — Technical Spec
 
 > AI study decks for students. Drop in a topic, a paragraph, a PDF or a photo of your
 > notes; get back a TL;DR, summary, key concepts, flashcards and a quiz. Plus a minimal
@@ -11,7 +11,7 @@
 ## 1. What this is
 
 Students already paste their notes into ChatGPT. The gap isn't the generation — it's
-that the output evaporates. Deckly makes the output an **artefact you come back to**:
+that the output evaporates. Retenit makes the output an **artefact you come back to**:
 a deck that remembers what you got wrong and asks you again in three days.
 
 **The core loop:** input → deck → study → return tomorrow.
@@ -168,7 +168,7 @@ most of the revenue. Consumable credit packs are a v2 question, not a launch one
 ## 7. Repo layout
 
 ```
-deckly/
+retenit/
 ├── apps/
 │   ├── mobile/              Expo app
 │   │   ├── src/

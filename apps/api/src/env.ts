@@ -11,10 +11,16 @@ export interface Secrets {
   DATABASE_URL: string;
   CLERK_SECRET_KEY: string;
   CLERK_PUBLISHABLE_KEY: string;
-  AI_GATEWAY_API_KEY: string;
+  /** The model key. Required. Starts with `gsk_`. */
   GROQ_API_KEY: string;
+  /**
+   * Optional Cloudflare AI Gateway token, a completely different credential
+   * from GROQ_API_KEY. Leave it blank and calls go straight to Groq; set it and
+   * they route through the gateway for caching and spend visibility.
+   */
+  CF_AI_GATEWAY_TOKEN?: string;
+  /** Shared secret the RevenueCat webhook must present. */
   REVENUECAT_WEBHOOK_SECRET: string;
-  REVENUECAT_SECRET_KEY: string;
 }
 
 export interface Vars {

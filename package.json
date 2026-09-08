@@ -1,12 +1,12 @@
 {
-  "name": "deckly",
+  "name": "retenit",
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "mobile": "pnpm --filter @deckly/mobile",
-    "api": "pnpm --filter @deckly/api",
-    "db:generate": "pnpm --filter @deckly/api db:generate",
-    "db:migrate": "pnpm --filter @deckly/api db:migrate",
+    "mobile": "pnpm --filter @retenit/mobile",
+    "api": "pnpm --filter @retenit/api",
+    "db:generate": "pnpm --filter @retenit/api db:generate",
+    "db:migrate": "pnpm --filter @retenit/api db:migrate",
     "typecheck": "pnpm -r --parallel typecheck"
   },
   "packageManager": "pnpm@11.5.1"

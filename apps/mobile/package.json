@@ -1,5 +1,5 @@
 {
-  "name": "@deckly/mobile",
+  "name": "@retenit/mobile",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@clerk/clerk-expo": "^2.20.0",
-    "@deckly/shared": "workspace:*",
+    "@retenit/shared": "workspace:*",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/inter-tight": "^0.4.2",
     "@expo/vector-icons": "^15.1.1",

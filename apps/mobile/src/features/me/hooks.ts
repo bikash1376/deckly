@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Me, CREDIT_COST } from "@deckly/shared";
+import { Me, CREDIT_COST } from "@retenit/shared";
 import { useApi } from "@/lib/use-api";
 
 export const meKeys = { all: ["me"] as const };

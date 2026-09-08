@@ -2,13 +2,13 @@
 #
 # These are ALL secrets. `.dev.vars` is gitignored and must stay that way.
 # For deployed environments do not put them here: push each one with
-#   pnpm --filter @deckly/api exec wrangler secret put NAME
+#   pnpm --filter @retenit/api exec wrangler secret put NAME
 # so they live in Cloudflare rather than in the repo or in wrangler.jsonc.
 
 # Neon > your project > Connection string > pooled.
 # Must be the pooled connection: the Worker uses the HTTP driver, and the
 # direct connection will not work from a Worker at all.
-DATABASE_URL=postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/deckly?sslmode=require
+DATABASE_URL=postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/retenit?sslmode=require
 
 # Clerk > API Keys > Secret key. Used to verify the JWT on every request.
 CLERK_SECRET_KEY=sk_test_
@@ -17,16 +17,16 @@ CLERK_SECRET_KEY=sk_test_
 # it to resolve the token issuer.
 CLERK_PUBLISHABLE_KEY=pk_test_
 
-# The AI gateway. Groq is the launch model, routed through a gateway so
-# swapping providers is a config change rather than a code change.
-AI_GATEWAY_API_KEY=
+# Groq API key. This is the one that actually calls the model, and it is
+# required. console.groq.com > API Keys. Starts with gsk_.
 GROQ_API_KEY=gsk_
+
+# OPTIONAL, and a different credential entirely from the one above. A
+# Cloudflare AI Gateway token buys response caching and spend visibility in
+# front of Groq. Leave it blank and calls go straight to Groq, which is fine.
+CF_AI_GATEWAY_TOKEN=
 
 # RevenueCat > Project > Integrations > Webhooks > Authorization header value.
 # The Worker rejects any webhook that does not present this, otherwise anyone
 # who finds the URL can grant themselves premium.
 REVENUECAT_WEBHOOK_SECRET=
-
-# RevenueCat > Project > API keys > Secret key. Used to read entitlements back
-# when a webhook is missed.
-REVENUECAT_SECRET_KEY=

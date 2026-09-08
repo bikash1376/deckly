@@ -14,8 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMe, useDeleteAccount } from "@/features/me/hooks";
 import { raw } from "@/theme";
 
-const PRIVACY_URL = "https://deckly.app/privacy";
-const TERMS_URL = "https://deckly.app/terms";
+const PRIVACY_URL = "https://retenit.app/privacy";
+const TERMS_URL = "https://retenit.app/terms";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -45,7 +45,7 @@ export default function ProfileScreen() {
             } catch {
               Alert.alert(
                 "Could not delete your account",
-                "Check your connection and try again. If it keeps failing, email help@deckly.app.",
+                "Check your connection and try again. If it keeps failing, email help@retenit.app.",
               );
             } finally {
               setBusy(false);

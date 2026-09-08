@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Deckly",
-    "slug": "deckly",
+    "name": "Retenit",
+    "slug": "retenit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "deckly",
+    "scheme": "retenit",
     "userInterfaceStyle": "light",
     "backgroundColor": "#EDECEA",
     "newArchEnabled": true,
     "android": {
-      "package": "app.deckly.mobile",
+      "package": "app.retenit.mobile",
       "adaptiveIcon": {
         "backgroundColor": "#EDECEA",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -41,8 +41,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Deckly needs your photos so you can turn a picture of your notes into a deck.",
-          "cameraPermission": "Deckly needs the camera so you can scan a page of notes into a deck."
+          "photosPermission": "Retenit needs your photos so you can turn a picture of your notes into a deck.",
+          "cameraPermission": "Retenit needs the camera so you can scan a page of notes into a deck."
         }
       ],
       [

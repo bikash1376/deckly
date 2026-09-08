@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "deckly-api",
+  "name": "retenit-api",
   "main": "src/index.ts",
   "compatibility_date": "2025-09-01",
 
@@ -12,11 +12,17 @@
   "r2_buckets": [
     {
       "binding": "UPLOADS",
-      "bucket_name": "deckly-uploads",
-      "preview_bucket_name": "deckly-uploads-preview"
+      "bucket_name": "retenit-uploads",
+      "preview_bucket_name": "retenit-uploads-preview"
     }
   ],
 
+  // Model choice is not only about price. On Groq, strict structured outputs
+  // (constrained decoding against a JSON schema) are supported on the GPT-OSS
+  // and Qwen families only. Llama falls back to JSON object mode with no schema
+  // enforcement, which is the exact guarantee generateObject relies on.
+  // gpt-oss-20b is also the cheapest production model at $0.075/$0.30 per 1M.
+  //
   // Every secret lives in `.dev.vars` locally and in Cloudflare secrets when
   // deployed. Nothing secret belongs in this file, which is committed:
   //   DATABASE_URL, CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY,
@@ -24,21 +30,21 @@
   //   REVENUECAT_WEBHOOK_SECRET, REVENUECAT_SECRET_KEY
   "vars": {
     "ENVIRONMENT": "development",
-    "MODEL_FAST": "llama-3.3-70b-versatile",
-    "MODEL_QUALITY": "llama-3.3-70b-versatile"
+    "MODEL_FAST": "openai/gpt-oss-20b",
+    "MODEL_QUALITY": "openai/gpt-oss-120b"
   },
 
   "env": {
     "production": {
       "vars": {
         "ENVIRONMENT": "production",
-        "MODEL_FAST": "llama-3.3-70b-versatile",
-        "MODEL_QUALITY": "llama-3.3-70b-versatile"
+        "MODEL_FAST": "openai/gpt-oss-20b",
+        "MODEL_QUALITY": "openai/gpt-oss-120b"
       },
       "r2_buckets": [
         {
           "binding": "UPLOADS",
-          "bucket_name": "deckly-uploads"
+          "bucket_name": "retenit-uploads"
         }
       ]
     }

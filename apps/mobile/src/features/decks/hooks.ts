@@ -8,7 +8,7 @@ import {
   WeakTopic,
   type CardKind,
   type CreateDeckInput,
-} from "@deckly/shared";
+} from "@retenit/shared";
 import { useApi } from "@/lib/use-api";
 
 export const deckKeys = {

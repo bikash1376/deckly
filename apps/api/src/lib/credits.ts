@@ -1,5 +1,5 @@
 import { and, eq, sql } from "drizzle-orm";
-import { CREDIT_COST } from "@deckly/shared";
+import { CREDIT_COST } from "@retenit/shared";
 import { entitlements, ledger, type Db } from "@/db";
 import { errors } from "@/lib/errors";
 import { startOfNextMonth, FREE_MONTHLY_CREDITS } from "@/middleware/auth";

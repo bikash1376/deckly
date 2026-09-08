@@ -6,7 +6,7 @@ import {
   Eli5,
   ExamQuestions,
   type Card as CardEntity,
-} from "@deckly/shared";
+} from "@retenit/shared";
 import { Text } from "@/components/ui/text";
 
 /**

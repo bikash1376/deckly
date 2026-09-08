@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { and, eq, lte, sql, count } from "drizzle-orm";
-import { ReviewGrade, Flashcards as FlashcardsSchema } from "@deckly/shared";
+import { ReviewGrade, Flashcards as FlashcardsSchema } from "@retenit/shared";
 import { createDb, reviews, decks, cards, reviewDays, users } from "@/db";
 import { errors } from "@/lib/errors";
 import { schedule, type SrsState } from "@/lib/srs";

@@ -1,4 +1,4 @@
-import type { CardKind } from "@deckly/shared";
+import type { CardKind } from "@retenit/shared";
 
 /**
  * Prompts, versioned.
@@ -27,7 +27,7 @@ export const PROMPT_VERSION: Record<CardKind | "chat" | "grammar" | "enhance", s
 /**
  * Appended to every prompt.
  *
- * The em dash rule is here because Deckly never shows one, and models produce
+ * The em dash rule is here because Retenit never shows one, and models produce
  * them constantly. Asking is not sufficient, which is why `cleanDeep` runs over
  * every response as well, but asking cuts down how often a sentence arrives
  * already built around punctuation we are about to rewrite.

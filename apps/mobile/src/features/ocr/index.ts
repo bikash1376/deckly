@@ -60,7 +60,7 @@ export async function prefetchOcrModel(): Promise<void> {
   warmed = true;
 
   try {
-    const file = new File(Paths.cache, "deckly-ocr-warmup.png");
+    const file = new File(Paths.cache, "retenit-ocr-warmup.png");
     if (!file.exists) {
       file.create({ overwrite: true });
       file.write(base64ToBytes(WARMUP_PNG_BASE64));

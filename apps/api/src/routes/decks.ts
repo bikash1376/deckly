@@ -7,7 +7,7 @@ import {
   Flashcards as FlashcardsSchema,
   DECK_COLORS,
   type DeckColor,
-} from "@deckly/shared";
+} from "@retenit/shared";
 import { createDb, decks, cards, reviews, uploadTickets, quizAttempts } from "@/db";
 import { debit, refund } from "@/lib/credits";
 import { assertWithinRateLimit } from "@/lib/rate-limit";

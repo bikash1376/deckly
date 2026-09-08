@@ -13,7 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { X, Flag, Cards as CardsIcon } from "phosphor-react-native";
-import { Flashcards as FlashcardsSchema, type ReviewGrade } from "@deckly/shared";
+import { Flashcards as FlashcardsSchema, type ReviewGrade } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

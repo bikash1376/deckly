@@ -3,7 +3,7 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Fire, MagnifyingGlass, Plus, Cards } from "phosphor-react-native";
-import type { Deck } from "@deckly/shared";
+import type { Deck } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { IconButton } from "@/components/ui/icon-button";

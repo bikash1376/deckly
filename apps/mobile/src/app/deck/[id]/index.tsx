@@ -10,7 +10,7 @@ import {
   Sparkle,
   Cards as CardsIcon,
 } from "phosphor-react-native";
-import { CREDIT_COST, type CardKind } from "@deckly/shared";
+import { CREDIT_COST, type CardKind } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Card, PressableCard } from "@/components/ui/card";

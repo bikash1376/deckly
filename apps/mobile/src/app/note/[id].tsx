@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ArrowLeft, Sparkle, TextAa, Cards as CardsIcon, X } from "phosphor-react-native";
-import { CREDIT_COST, type GrammarCheck, type EnhanceResult } from "@deckly/shared";
+import { CREDIT_COST, type GrammarCheck, type EnhanceResult } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

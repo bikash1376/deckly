@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { and, desc, eq, count } from "drizzle-orm";
-import { cleanDeep, DECK_COLORS, type DeckColor } from "@deckly/shared";
+import { cleanDeep, DECK_COLORS, type DeckColor } from "@retenit/shared";
 import { createDb, notes, decks } from "@/db";
 import { debit, refund, getBalance } from "@/lib/credits";
 import { assertWithinRateLimit } from "@/lib/rate-limit";

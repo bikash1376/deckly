@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { ArrowLeft, PaperPlaneRight } from "phosphor-react-native";
-import { CREDIT_COST } from "@deckly/shared";
+import { CREDIT_COST } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { IconButton } from "@/components/ui/icon-button";

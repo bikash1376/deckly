@@ -17,9 +17,9 @@ import type { Bindings } from "@/env";
 export function createModel(env: Bindings, tier: "fast" | "quality" = "fast") {
   const groq = createGroq({
     apiKey: env.GROQ_API_KEY,
-    ...(env.AI_GATEWAY_API_KEY
+    ...(env.CF_AI_GATEWAY_TOKEN
       ? {
-          headers: { "cf-aig-authorization": `Bearer ${env.AI_GATEWAY_API_KEY}` },
+          headers: { "cf-aig-authorization": `Bearer ${env.CF_AI_GATEWAY_TOKEN}` },
         }
       : {}),
   });
@@ -30,11 +30,17 @@ export function createModel(env: Bindings, tier: "fast" | "quality" = "fast") {
 /**
  * How much source text a single generation reads.
  *
- * Well under the model's context window on purpose. Filling a window degrades
- * attention across the middle of it, and a summary built from a truncated but
- * coherent chunk beats one built from everything at half the quality.
+ * Well under the model's context window on purpose, for two reasons.
+ *
+ * Quality: filling a window degrades attention across the middle of it, and a
+ * summary built from a truncated but coherent chunk beats one built from
+ * everything at half the quality.
+ *
+ * Budget: 12k characters is roughly 3k tokens. Groq's free tier allows 8k
+ * tokens per MINUTE across the whole account, so at the old 24k limit a single
+ * deck would consume most of a minute's allowance on input alone.
  */
-export const MAX_SOURCE_CHARS = 24_000;
+export const MAX_SOURCE_CHARS = 12_000;
 
 /** Trim to a sentence boundary so the model never starts mid-word. */
 export function clampSource(text: string, max = MAX_SOURCE_CHARS): string {

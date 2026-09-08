@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Lightning, Fire, Flag } from "phosphor-react-native";
-import type { ReviewGrade } from "@deckly/shared";
+import type { ReviewGrade } from "@retenit/shared";
 
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

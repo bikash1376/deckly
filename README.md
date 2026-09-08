@@ -1,4 +1,4 @@
-# Deckly
+# Retenit
 
 AI study decks for students. Drop in a topic, a paragraph, a PDF or a photo of your
 notes; get back a TL;DR, summary, key concepts, flashcards and a quiz that remembers
@@ -33,7 +33,7 @@ pnpm install
 | **Neon** | A Postgres project. Copy the **pooled** connection string. | neon.tech |
 | **Clerk** | An application with **Google** enabled as a social provider. Copy the publishable and secret keys. | clerk.com |
 | **Groq** | An API key. | console.groq.com |
-| **Cloudflare** | An account, plus an R2 bucket named `deckly-uploads`. | dash.cloudflare.com |
+| **Cloudflare** | An account, plus an R2 bucket named `retenit-uploads`. | dash.cloudflare.com |
 | **RevenueCat** | A project with a Google Play app, a monthly and an annual product, and one entitlement. | revenuecat.com |
 
 RevenueCat can wait. Without it the paywall shows a plain notice instead of plans, and
@@ -56,7 +56,7 @@ Both files are gitignored. Two things people get wrong here:
 For anything deployed, do not use a file:
 
 ```bash
-pnpm --filter @deckly/api exec wrangler secret put DATABASE_URL
+pnpm --filter @retenit/api exec wrangler secret put DATABASE_URL
 ```
 
 ### 4. Create the database tables
@@ -70,7 +70,7 @@ DATABASE_URL="postgres://..." pnpm db:migrate
 ### 5. Run it
 
 ```bash
-pnpm --filter @deckly/api dev        # Worker on :8787
+pnpm --filter @retenit/api dev        # Worker on :8787
 ```
 
 The app needs a **development build**, not Expo Go: Clerk's native Google flow,
@@ -99,8 +99,8 @@ the user gets nothing.
 
 ```bash
 pnpm typecheck                       # both packages
-pnpm --filter @deckly/mobile start
-pnpm --filter @deckly/api dev
+pnpm --filter @retenit/mobile start
+pnpm --filter @retenit/api dev
 ```
 
 A few conventions worth knowing before you write code. The reasoning is in
