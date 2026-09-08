@@ -48,11 +48,15 @@
   /* -- Type -------------------------------------------------------------- *
    * Inter Tight for display (tight tracking, the grotesk in the refs),
    * Inter for everything else. Two families. Resist adding a third. */
+  /* Named `body-md` / `body-sb` rather than `medium` / `semibold`: a
+   * `--font-medium` token would generate a `font-medium` family utility that
+   * collides head on with Tailwind's built in `font-medium` weight utility.
+   * React Native has no synthetic weights anyway, so weight IS the family. */
   --font-display: 'InterTight_600SemiBold';
   --font-display-bold: 'InterTight_700Bold';
-  --font-sans: 'Inter_400Regular';
-  --font-medium: 'Inter_500Medium';
-  --font-semibold: 'Inter_600SemiBold';
+  --font-body: 'Inter_400Regular';
+  --font-body-md: 'Inter_500Medium';
+  --font-body-sb: 'Inter_600SemiBold';
 
   /* The refs use a big jump between hero and body — that contrast IS the look.
    * Don't fill the gap with intermediate sizes. */
@@ -98,6 +102,7 @@
   --radius-tile: 20px;
   --radius-card: 24px;
   --radius-sheet: 28px;
+  --radius-pill: 999px;
 
   /* -- Spacing ----------------------------------------------------------- *
    * Default 4px scale stays. `gutter` is the screen margin used everywhere —

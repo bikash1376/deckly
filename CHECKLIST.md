@@ -20,27 +20,28 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [x] Design system as `@theme` tokens — colours, type scale, radii, gutter
 - [x] `SPEC.md` — stack, architecture, data model, conventions
 - [x] Push to `bikash1376/deckly`
-- [ ] Load Inter / Inter Tight via `expo-font`
+- [x] Load Inter / Inter Tight via `expo-font`
 - [ ] Init `react-native-reusables` and pull the primitives
 - [ ] `.env.example` for both app and Worker
 - [ ] Rename project dir to `deckly` (space in path breaks local Gradle builds)
 
 ## 1. Design system (components)
 
-- [ ] `Text` — display / title / body / label / mono variants
-- [ ] `Button` — primary (ink pill), secondary (outline), ghost, destructive
-- [ ] `IconButton` — circular, white-on-surface (see `s1`, `s3`)
-- [ ] `Card` — white surface, radius 24, soft shadow
-- [ ] `DeckCard` — the folder shape from `s3` (SVG tab silhouette)
-- [ ] `DeckStack` — layered/stacked deck from `s1`
-- [ ] `Chip` / `Badge` — subject + status pills
-- [ ] `SegmentedControl` — "My Deck / Collections" toggle from `s1`
-- [ ] `ProgressBar` — thin, "7/14 lessons complete"
+- [x] `Text` — variant-only sizing, sanitises string children
+- [x] `Button` — primary (ink pill), secondary, ghost, destructive
+- [x] `IconButton` — circular, surface / sunken / ink / bare
+- [x] `Card` + `PressableCard` — elevated / flat / outlined / sunken
+- [x] `DeckCard` — the folder silhouette from `s3`
+- [x] `Chip` — neutral, outline, semantic, and all six deck tones
+- [x] `Segmented` — animated with `LinearTransition`
+- [x] `Progress` — eased, deck-toned, works on coloured surfaces
+- [x] `Input` — label, hint, error
+- [x] `Skeleton` + `SkeletonCardBlock`
+- [x] `EmptyState`
+- [x] `TabBar` — floating pill, expanding active tab, regular-to-fill icon
+- [x] `usePressScale` — the shared spring + haptic press feel
 - [ ] `Sheet` — bottom sheet wrapper
-- [ ] `Input` / `TextArea`
-- [ ] `Skeleton` — shimmer placeholders for generation
-- [ ] `EmptyState`
-- [ ] `TabBar` — floating pill nav from `s1`
+- [ ] `DeckStack` — layered deck hero from `s1`
 
 ## 2. Auth (Clerk)
 
@@ -49,6 +50,16 @@ AI study decks + a minimal writing pad. Expo RN · Clerk · RevenueCat · Hono o
 - [ ] Onboarding carousel (see `s2` — 4 dots, "Your cards and create deck")
 - [ ] Auth route guard / redirect logic
 - [ ] Account deletion screen — **required by Play Store**
+
+## 2b. App data layer
+
+- [x] Typed API client with Zod response parsing (`src/lib/api.ts`)
+- [x] `useApi` bound to the live Clerk token
+- [x] Wire entity schemas in `@deckly/shared` (Deck, Card, Note, ReviewCard, Me)
+- [x] TanStack Query hooks: decks, review, notes, me
+- [x] SM-2 lite scheduler mirrored client side (`src/lib/srs.ts`)
+- [x] `cleanCopy` / `cleanDeep` applied to every parsed response
+- [ ] Offline cache persistence
 
 ## 3. Backend — Worker API
 
